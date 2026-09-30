@@ -37,7 +37,11 @@ header.top{background:linear-gradient(135deg,#2d3a0a 0%,#4a5c10 55%,#7a4a00 100%
 h1{font:800 26px/1.05 "Roboto Condensed",Roboto,sans-serif;letter-spacing:.3px;margin:0;text-transform:uppercase}
 .sub{opacity:.85;font-size:13px;margin-top:4px}
 .pot{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
-.pot div{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:6px 10px;font-size:12px;line-height:1.2}
+.pot div{border-radius:10px;padding:6px 11px;font-size:12px;line-height:1.2;color:#2a2410;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.pot .p-total{background:#afe313;color:#243000}
+.pot .p1{background:linear-gradient(160deg,#f3d36b,#d4a017)}
+.pot .p2{background:linear-gradient(160deg,#e3e8eb,#a8b2b8)}
+.pot .p3{background:linear-gradient(160deg,#dca47a,#b87333)}
 .pot b{display:block;font:700 17px "Roboto Condensed",Roboto,sans-serif}
 nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
 nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
@@ -52,9 +56,26 @@ main{padding:16px 0 48px}
 .search:focus{border-color:var(--lime)}
 /* standings */
 .st-list{list-style:none;margin:0;padding:0}
-.st-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-top:1px solid var(--line);cursor:pointer}
+.st-item{position:relative;display:flex;align-items:center;gap:12px;padding:11px 14px 11px 20px;border-top:1px solid var(--line);cursor:pointer;background:var(--surface);background:color-mix(in srgb,var(--tc,transparent) 13%,var(--surface))}
+.st-item .swatch{position:absolute;left:0;top:0;bottom:0;width:7px;background:var(--tc);box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
+.st-list .st-item:first-child .swatch{border-top-left-radius:var(--radius)}
+.st-list .st-item:last-child .swatch{border-bottom-left-radius:var(--radius)}
+.score small.mv{display:block;font:700 11px Roboto,sans-serif;text-align:right;margin-top:1px}
+.mv.up{color:var(--pos)}.mv.down{color:var(--neg)}
+.banner{margin:-18px -18px 16px;padding:18px;border-radius:var(--radius) var(--radius) 0 0;background:var(--tc);color:var(--tink);border-bottom:1px solid rgba(0,0,0,.08)}
+.hero .banner .leader{color:inherit;opacity:.85}
+.banner .muted{color:inherit;opacity:.8}
+.banner .pill{background:rgba(255,255,255,.85);border-color:rgba(0,0,0,.12);color:#2b2a26}
+.rankchart{padding:10px 8px 4px}
+.rankchart svg{display:block;width:100%;height:auto;overflow:visible}
+.rankchart text{font:600 10px Roboto,sans-serif;fill:var(--ink-3)}
+.rankchart .lbl{font:800 11px "Roboto Condensed",Roboto,sans-serif;fill:var(--ink)}
+.since{margin-top:8px;font-size:13px;font-weight:700;color:var(--orange-ink)}
+.player.dropped .since{opacity:1}
+.player.dropped{opacity:1}
+.player.dropped .top,.player.dropped .cats{opacity:.6}
 .st-item:first-child{border-top:0}
-.st-item:hover{background:var(--surface-2)}
+.st-item:hover{filter:brightness(.97)}
 .rank{width:40px;flex:none;text-align:center;font:800 16px "Roboto Condensed",Roboto,sans-serif;color:var(--ink-2)}
 .rank small{display:block;font:500 10px Roboto,sans-serif;color:var(--ink-3);letter-spacing:.4px}
 .medal{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;color:#fff;font:800 15px "Roboto Condensed",Roboto,sans-serif}
@@ -92,7 +113,7 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .player:first-child{border-top:0}
 .player .top{display:flex;align-items:center;gap:10px}
 .avatar{width:36px;height:36px;border-radius:50%;flex:none;display:grid;place-items:center;font:800 14px "Roboto Condensed",Roboto,sans-serif;color:#fff;background:var(--slate)}
-.player.dropped{opacity:.55}
+
 .player .pts{font:800 20px "Roboto Condensed",Roboto,sans-serif;text-align:right}
 .player .pts small{display:block;font:500 11px Roboto,sans-serif;color:var(--ink-3)}
 .cats{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
@@ -238,6 +259,16 @@ function model(st, lg, tb, cp){
     });
   }
   const byName = Object.fromEntries(castaways.map(c => [c.name.toLowerCase(), c]));
+  // signed events block (second CASTAWAY header on Castaway Points): +1/-1 per event, feeds Sole Survivor +1 by episode
+  const sIdx = cp.findIndex((r, i) => i > 0 && (r[0] || "").trim().toUpperCase() === "CASTAWAY");
+  if (sIdx > 0){
+    const sh = cp[sIdx];
+    for (let i = sIdx + 1; i < cp.length; i++){
+      const r = cp[i]; const n = (r[0] || "").trim().toLowerCase(); if (!n || !byName[n]) break;
+      byName[n].sig = {};
+      for (let e = 2; e <= 13; e++){ const j = col(sh, String(e)); if (j >= 0) byName[n].sig[e] = num(r[j]); }
+    }
+  }
 
   // episode log
   const lh = lg[0];
@@ -269,11 +300,30 @@ function model(st, lg, tb, cp){
     tribes.push({
       leader, tribe: (r[tI("TRIBE")] || "").trim(), draft, after, ss: (r[tI("SOLE SURVIVOR")] || "").trim(),
       pre: num(r[tI("PRE-MERGE")]), post: num(r[tI("POST-MERGE")]), ssPts: num(r[tI("SS +1")]),
-      bonus: num(r[tI("BONUSES")]), total: num(r[tI("TOTAL")])
+      bonus: num(r[tI("BONUSES")]), total: num(r[tI("TOTAL")]),
+      color: /^#?[0-9a-f]{6}$/i.test((r[tI("COLOR")] || "").trim()) ? "#" + r[tI("COLOR")].trim().replace("#","") : "#899499"
     });
   }
   // rank from totals (ties share a rank)
   tribes.forEach(t => { t.rank = 1 + tribes.filter(o => o.total > t.total).length; t.tied = tribes.filter(o => o.total === t.total).length > 1; });
+
+  // week-by-week totals and ranks, rebuilt from each episode's scores
+  const ssVal = num(settings["Sole Survivor +1 value"]) || 1;
+  const eps = []; for (let e = 2; e <= Math.max(latest, 2); e++) eps.push(e);
+  const roster = (t, e) => (e >= merge && t.after.length) ? t.after : t.draft;
+  tribes.forEach(t => {
+    let cum = 0; t.hist = [];
+    eps.forEach(e => {
+      const r = roster(t, e);
+      cum += r.reduce((s, n) => s + (byName[n.toLowerCase()]?.eps[e] || 0), 0);
+      if (e >= merge && t.ss && r.includes(t.ss)) cum += ssVal * (byName[t.ss.toLowerCase()]?.sig?.[e] || 0);
+      t.hist.push({ ep: e, total: cum });
+    });
+    // one-time bonuses (made merge, FTC, winner, most categories) land on the latest episode, so the last point always matches the sheet
+    if (t.hist.length) t.hist[t.hist.length - 1].total = t.total;
+  });
+  eps.forEach((e, k) => tribes.forEach(t => { t.hist[k].rank = 1 + tribes.filter(o => o.hist[k].total > t.hist[k].total).length; }));
+  tribes.forEach(t => { const h = t.hist; t.move = latest > 2 && h.length > 1 ? h[h.length - 2].rank - h[h.length - 1].rank : 0; });
 
   return { settings, merge, castaways, byName, events, latest, tribes, pointsFor,
     pot: { total: settings["Total collected"],
@@ -299,6 +349,21 @@ function firstName(full){
   const clash = D.tribes.filter(t => t.leader.trim().split(/\s+/)[0].toLowerCase() === first.toLowerCase()).length > 1;
   return clash && parts[1] ? `${first} ${parts[1][0]}.` : first;
 }
+const inkOn = hex => { const h = hex.replace("#",""); const [r,g,b] = [0,2,4].map(i => parseInt(h.substr(i,2),16)/255).map(v => v <= .03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4)); return (0.2126*r + 0.7152*g + 0.0722*b) > 0.32 ? "#1d1d1b" : "#ffffff"; };
+const lineColor = hex => inkOn(hex) === "#ffffff" ? hex : "var(--slate-dark)";
+const moveTag = t => t.move > 0 ? `<small class="mv up" title="Up ${t.move} since last episode">▲${t.move}</small>` : t.move < 0 ? `<small class="mv down" title="Down ${-t.move} since last episode">▼${-t.move}</small>` : "";
+function rankChart(t){
+  const h = t.hist, N = D.tribes.length;
+  if (h.length < 2) return `<div class="state" style="padding:22px 16px">Currently #${t.rank} of ${N}. The line starts once Episode 3 is scored.</div>`;
+  const W = 320, H = 160, L = 26, Rp = 14, T = 22, B = 22;
+  const x = i => L + (h.length === 1 ? 0 : i * (W - L - Rp) / (h.length - 1));
+  const y = r => T + (r - 1) * (H - T - B) / Math.max(N - 1, 1);
+  const c = lineColor(t.color);
+  const grid = [1, Math.round(N/2), N].map(r => `<line x1="${L}" x2="${W-Rp}" y1="${y(r)}" y2="${y(r)}" stroke="var(--line)" stroke-dasharray="${r===1?"":"3 4"}"/><text x="${L-6}" y="${y(r)+3}" text-anchor="end">${r}</text>`).join("");
+  const path = h.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.rank).toFixed(1)}`).join(" ");
+  const dots = h.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.rank)}" r="4.5" fill="${c}" stroke="var(--surface)" stroke-width="2"/><text class="lbl" x="${x(i)}" y="${y(p.rank) - 8}" text-anchor="middle">${p.rank}</text><text x="${x(i)}" y="${H - 6}" text-anchor="middle">Ep ${p.ep}</text>`).join("");
+  return `<div class="rankchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Place by episode">${grid}<path d="${path}" fill="none" stroke="${c}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>${dots}</svg></div>`;
+}
 const initials = n => n.split(/\s+/).map(w => w[0]).join("").slice(0,2).toUpperCase();
 const hue = n => { let h = 0; for (const c of n) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
 const avatar = n => `<div class="avatar" style="background:hsl(${hue(n)} 32% 46%)">${esc(initials(n))}</div>`;
@@ -310,10 +375,11 @@ function vStandings(){
   const sorted = [...D.tribes].sort((a,b) => b.total - a.total || a.leader.localeCompare(b.leader));
   const items = sorted.filter(t => !q || (t.leader + " " + t.tribe).toLowerCase().includes(q.toLowerCase())).map(t => {
     const r = t.rank <= 3 ? `<span class="medal m${t.rank}">${t.rank}</span>` : `${t.rank}`;
-    return `<li class="st-item" data-leader="${esc(t.leader)}">
+    return `<li class="st-item" data-leader="${esc(t.leader)}" style="--tc:${t.color}">
+      <span class="swatch"></span>
       <div class="rank">${r}${t.tied ? "<small>TIED</small>" : ""}</div>
       <div class="who"><b>${esc(t.tribe)}</b><span>${esc(firstName(t.leader))}</span></div>
-      <div class="score">${t.total}</div>
+      <div class="score">${t.total}${moveTag(t)}</div>
       <svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
     </li>`;
   }).join("");
@@ -357,6 +423,7 @@ function vTribe(){
       </div>
       ${tags.trim() ? `<div class="cats" style="margin-top:8px">${tags}</div>` : ""}
       ${cats ? `<div class="cats">${cats}</div>` : ""}
+      ${kind === "dropped" ? `<div class="since">Scored ${signed(c.post + c.bonus)} pts for other tribes since you dropped them</div>` : ""}
     </li>`;
   };
 
@@ -370,11 +437,11 @@ function vTribe(){
 
   return `<div class="pickbox card"><label for="tribeSel">Pick your tribe</label><p>Tap the box below and choose your name.</p><select id="tribeSel">${opts}</select></div>
   <div class="card hero">
-    <div class="row">
+    <div class="banner row" style="--tc:${t.color};--tink:${inkOn(t.color)}">
       <div style="min-width:0;flex:1">
         <div class="tname">${esc(t.tribe)}</div>
         <div class="leader">${esc(t.leader)}</div>
-        <div style="margin-top:8px"><span class="pill ${t.rank <= 3 ? "lime" : ""}">${t.tied ? "Tied " : ""}#${t.rank} of ${D.tribes.length}</span></div>
+        <div style="margin-top:8px"><span class="pill">${t.tied ? "Tied " : ""}#${t.rank} of ${D.tribes.length}</span> ${t.move ? `<span class="pill">${t.move > 0 ? "▲ Up " + t.move : "▼ Down " + (-t.move)} since last episode</span>` : ""}</div>
       </div>
       <div style="text-align:right"><div class="big">${t.total}</div><div class="muted" style="font-size:12px">POINTS</div></div>
     </div>
@@ -385,6 +452,8 @@ function vTribe(){
       <div><b>${t.bonus}</b><span>Bonus pts</span></div>
     </div>
   </div>
+  <h2>Place by episode</h2>
+  <div class="card">${rankChart(t)}</div>
   <h2>Points by episode</h2>
   <div class="card">
     <div class="bars">${bars}</div>
@@ -393,7 +462,7 @@ function vTribe(){
   </div>
   <h2>${swapped ? "Tribe after the merge" : "Tribe"}</h2>
   <div class="card"><ul class="players">${current.map(n => playerRow(n, added.includes(n) ? "added" : "")).join("")}</ul></div>
-  ${dropped.length ? `<h2>Dropped at the merge</h2><div class="card"><ul class="players">${dropped.map(n => playerRow(n, "dropped")).join("")}</ul></div>` : ""}
+  ${dropped.length ? `<h2>Dropped at the merge</h2><p class="muted" style="font-size:13px;margin:-2px 2px 8px">No regrets? Here\u2019s what they\u2019ve done since.</p><div class="card"><ul class="players">${dropped.map(n => playerRow(n, "dropped")).join("")}</ul></div>` : ""}
   <p class="muted" style="font-size:12px;margin-top:10px">Sole Survivor +1 and one-time bonuses (made merge, final tribal, winner, most categories) are included in the totals above.</p>`;
 }
 
@@ -450,7 +519,7 @@ function header(){
   const through = D.latest ? `Scores through Episode ${D.latest}` : "Season starts soon";
   $("#sub").textContent = through + (D.merge < 99 ? ` · merged at Ep ${D.merge - 1}` : "");
   const p = D.pot;
-  $("#pot").innerHTML = p.total ? `<div>Pot<b>${esc(p.total)}</b></div><div>1st<b>${esc(p.p1)}</b></div><div>2nd<b>${esc(p.p2)}</b></div><div>3rd<b>${esc(p.p3)}</b></div>` : "";
+  $("#pot").innerHTML = p.total ? `<div class="p-total">Pot<b>${esc(p.total)}</b></div><div class="p1">1st<b>${esc(p.p1)}</b></div><div class="p2">2nd<b>${esc(p.p2)}</b></div><div class="p3">3rd<b>${esc(p.p3)}</b></div>` : "";
 }
 
 async function load(){
