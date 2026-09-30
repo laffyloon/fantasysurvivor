@@ -292,6 +292,13 @@ function tribeEpisodePoints(t){
   }
   return out;
 }
+// "Frankie Carrera" -> "Frankie"; keeps "Preston & Carly" whole; two Jordans become "Jordan K." / "Jordan S."
+function firstName(full){
+  if (full.includes("&")) return full;
+  const parts = full.trim().split(/\s+/), first = parts[0];
+  const clash = D.tribes.filter(t => t.leader.trim().split(/\s+/)[0].toLowerCase() === first.toLowerCase()).length > 1;
+  return clash && parts[1] ? `${first} ${parts[1][0]}.` : first;
+}
 const initials = n => n.split(/\s+/).map(w => w[0]).join("").slice(0,2).toUpperCase();
 const hue = n => { let h = 0; for (const c of n) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
 const avatar = n => `<div class="avatar" style="background:hsl(${hue(n)} 32% 46%)">${esc(initials(n))}</div>`;
@@ -305,7 +312,7 @@ function vStandings(){
     const r = t.rank <= 3 ? `<span class="medal m${t.rank}">${t.rank}</span>` : `${t.rank}`;
     return `<li class="st-item" data-leader="${esc(t.leader)}">
       <div class="rank">${r}${t.tied ? "<small>TIED</small>" : ""}</div>
-      <div class="who"><b>${esc(t.leader)}</b><span>${esc(t.tribe)}</span></div>
+      <div class="who"><b>${esc(t.tribe)}</b><span>${esc(firstName(t.leader))}</span></div>
       <div class="score">${t.total}</div>
       <svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
     </li>`;
@@ -320,7 +327,7 @@ function vTribe(){
   const sel = store.get("s51.tribe");
   const tribes = [...D.tribes].sort((a,b) => a.leader.localeCompare(b.leader));
   const t = tribes.find(x => x.leader === sel) || tribes[0];
-  const opts = tribes.map(x => `<option value="${esc(x.leader)}" ${x === t ? "selected" : ""}>${esc(x.leader)} - ${esc(x.tribe)}</option>`).join("");
+  const opts = tribes.map(x => `<option value="${esc(x.leader)}" ${x === t ? "selected" : ""}>${esc(firstName(x.leader))} - ${esc(x.tribe)}</option>`).join("");
   const merged = D.merge < 99;
   const swapped = merged && t.after.length;
   const current = swapped ? t.after : t.draft;
