@@ -72,8 +72,8 @@ main{padding:16px 0 48px}
 .banner .pill{background:rgba(255,255,255,.85);border-color:rgba(0,0,0,.12);color:#2b2a26}
 .rankchart{padding:12px 8px 6px}
 .rankchart svg{display:block;width:100%;height:auto;overflow:visible}
-.rankchart text{font:600 10px Roboto,sans-serif;fill:var(--ink-3)}
-.rankchart .lbl{font:700 11px "Roboto Condensed",Roboto,sans-serif;fill:var(--ink-2)}
+.rankchart text{font:500 10px Roboto,sans-serif;fill:var(--ink-3)}
+.rankchart .lbl{font:600 10px "Roboto Condensed",Roboto,sans-serif;fill:var(--ink-2)}
 .since{margin-top:8px;font-size:13px;font-weight:700;color:var(--orange-ink)}
 .player.dropped .since{opacity:1}
 .player.dropped{opacity:1}
@@ -388,14 +388,14 @@ const moveTag = t => t.move > 0 ? `<small class="mv up" title="Up ${t.move} sinc
 function rankChart(t){
   const h = t.hist, N = D.tribes.length;
   if (h.length < 2) return `<div class="state" style="padding:22px 16px">Currently #${t.rank} of ${N}. The line starts once Episode 3 is scored.</div>`;
-  const W = 320, H = 130, L = 24, Rp = 14, T = 18, B = 20;
-  const x = i => L + (h.length === 1 ? 0 : i * (W - L - Rp) / (h.length - 1));
+  const W = Math.max(260, Math.min(window.innerWidth, 860) - 48), H = 150, L = 28, Rp = 24, T = 20, B = 22, P = 14;
+  const x = i => L + P + (h.length === 1 ? 0 : i * (W - L - P - Rp) / (h.length - 1));
   const y = r => T + (r - 1) * (H - T - B) / Math.max(N - 1, 1);
   const c = lineColor(t.color);
   const grid = [1, Math.round(N/2), N].map(r => `<line x1="${L}" x2="${W-Rp}" y1="${y(r)}" y2="${y(r)}" stroke="var(--line)" stroke-width="1" stroke-dasharray="${r===1?"":"2 4"}"/><text x="${L-6}" y="${y(r)+3}" text-anchor="end">${r}</text>`).join("");
   const path = h.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.rank).toFixed(1)}`).join(" ");
-  const dots = h.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.rank)}" r="3" fill="${c}" stroke="var(--surface)" stroke-width="1.5"/><text class="lbl" x="${x(i)}" y="${y(p.rank) - 8}" text-anchor="middle">${p.rank}</text><text x="${x(i)}" y="${H - 6}" text-anchor="middle">Ep ${p.ep}</text>`).join("");
-  return `<div class="rankchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Place by episode">${grid}<path d="${path}" fill="none" stroke="${c}" stroke-width="2" stroke-opacity=".85" stroke-linejoin="round" stroke-linecap="round"/>${dots}</svg></div>`;
+  const dots = h.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.rank)}" r="2.5" fill="${c}" stroke="var(--surface)" stroke-width="1.5"/><text class="lbl" x="${x(i)}" y="${y(p.rank) - 8}" text-anchor="middle">${p.rank}</text><text x="${x(i)}" y="${H - 6}" text-anchor="middle">Ep ${p.ep}</text>`).join("");
+  return `<div class="rankchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Place by episode">${grid}<path d="${path}" fill="none" stroke="${c}" stroke-width="1.5" stroke-opacity=".85" stroke-linejoin="round" stroke-linecap="round"/>${dots}</svg></div>`;
 }
 const initials = n => n.split(/\s+/).map(w => w[0]).join("").slice(0,2).toUpperCase();
 const hue = n => { let h = 0; for (const c of n) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
@@ -575,6 +575,8 @@ function vEpisodes(){
     </div>`;
 }
 
+let _rw = window.innerWidth;
+window.addEventListener("resize", () => { if (Math.abs(window.innerWidth - _rw) > 40 && document.querySelector(".rankchart svg")) { _rw = window.innerWidth; render(); } });
 function render(){
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.view === view));
   const app = $("#app");
