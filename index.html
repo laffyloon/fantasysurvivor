@@ -36,11 +36,13 @@ header.top{background:linear-gradient(135deg,#2d3a0a 0%,#4a5c10 55%,#7a4a00 100%
 .torch{width:38px;height:38px;flex:none}
 h1{font:800 26px/1.05 "Roboto Condensed",Roboto,sans-serif;letter-spacing:.3px;margin:0;text-transform:uppercase}
 .sub{opacity:.85;font-size:13px;margin-top:4px}
-.pot{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.pot{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:flex-end}
 .pot div{border-radius:10px;padding:6px 11px;font-size:12px;line-height:1.2;color:#2a2410;box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .pot .p-total{background:#afe313;color:#243000}
-.pot .p-total b{font-size:19px}
-.pot .p1 b,.pot .p2 b,.pot .p3 b{font-weight:500}
+.pot .p-total{padding:8px 14px}.pot .p-total b{font-size:24px;font-weight:800}
+.pot .p1{padding:7px 12px}.pot .p1 b{font-size:19px;font-weight:700}
+.pot .p2{padding:6px 10px}.pot .p2 b{font-size:16px;font-weight:600}
+.pot .p3{padding:5px 9px;font-size:11px}.pot .p3 b{font-size:14px;font-weight:600}
 .pot .p1{background:linear-gradient(160deg,#f3d36b,#d4a017)}
 .pot .p2{background:linear-gradient(160deg,#e3e8eb,#a8b2b8)}
 .pot .p3{background:linear-gradient(160deg,#dca47a,#b87333)}
@@ -159,6 +161,10 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .stats{display:grid;grid-template-columns:1fr;gap:10px}
 @media (min-width:640px){.stats{grid-template-columns:1fr 1fr}.stat.wide{grid-column:1/-1}}
 .stat{padding:12px 14px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (min-width:640px){.pair{grid-column:1/-1}}
+.pair .stat h3{font-size:13px}
+.pair .stat p{min-height:2.6em}
 .stat h3{margin:0;font:800 14px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;letter-spacing:.5px}
 .stat p{margin:2px 0 0;font-size:12px}
 .stat ul{list-style:none;margin:8px 0 0;padding:0}
@@ -503,22 +509,29 @@ function statsBlock(){
   // hidden gem: best scorer drafted by 3 or fewer tribes
   const gems = cs.filter(c => picks(c.name) <= 3).sort((a,b) => b.season - a.season || picks(a.name) - picks(b.name));
   const gem = gems[0];
+  // biggest bust: lowest scorer among castaways drafted by 25%+ of tribes
+  const bust = cs.filter(c => picks(c.name) >= N * 0.25).sort((a,b) => a.season - b.season || picks(b.name) - picks(a.name))[0];
   // most-categories race (+5 bonus at season end)
   const race = [...cs].sort((a,b) => b.catsHit - a.catsHit || b.season - a.season).slice(0,3);
-  // category leaders
+  return `<h2 style="margin-top:4px">Season stats</h2>
+  <div class="stats">
+    <div class="card stat"><h3>Most picked</h3><ul>${mp.map(c => row(c.name, picks(c.name), `on ${Math.round(picks(c.name) / N * 100)}% of tribes`)).join("")}</ul></div>
+    <div class="card stat"><h3>Most categories</h3><p class="muted">Race for the +5 end-of-season bonus</p><ul>${race.map(c => row(c.name, c.catsHit, `${c.catsHit} of ${Object.keys(D.pointsFor).length} categories`)).join("")}</ul></div>
+    <div class="pair">
+      ${gem ? `<div class="card stat"><h3>💎 Hidden gem</h3><p class="muted">Top scorer on 3 or fewer tribes</p><ul>${row(gem.name, gem.season, picks(gem.name) ? `on ${picks(gem.name)} tribe${picks(gem.name) === 1 ? "" : "s"}` : "nobody picked them")}</ul></div>` : ""}
+      ${bust ? `<div class="card stat"><h3>🪨 Biggest bust</h3><p class="muted">Lowest scorer on 25%+ of tribes</p><ul>${row(bust.name, bust.season, `on ${picks(bust.name)} tribes`)}</ul></div>` : ""}
+    </div>
+  </div>`;
+}
+function leadersBlock(){
+  const cs = D.castaways;
   const leaders = (D.catHits || []).map(cat => {
     const top = Math.max(0, ...cs.map(c => c.hits?.[cat] || 0));
     const who = top ? cs.filter(c => (c.hits?.[cat] || 0) === top).map(c => c.name) : [];
     return { cat, top, who, neg: isNeg(cat) };
   }).filter(x => x.top > 0 && !/torch lit/i.test(x.cat));   // torch-lit goes to everyone still in, so it is left out
-  return `<h2 style="margin-top:4px">Season stats</h2>
-  <div class="stats">
-    <div class="card stat"><h3>Most picked</h3><ul>${mp.map(c => row(c.name, picks(c.name), `on ${Math.round(picks(c.name) / N * 100)}% of tribes`)).join("")}</ul></div>
-    <div class="card stat"><h3>Most categories</h3><p class="muted">Race for the +5 end-of-season bonus</p><ul>${race.map(c => row(c.name, c.catsHit, `${c.catsHit} of ${Object.keys(D.pointsFor).length} categories`)).join("")}</ul></div>
-    ${gem ? `<div class="card stat gem"><h3>Hidden gem</h3><p class="muted">Top scorer picked by 3 or fewer tribes</p><ul>${row(gem.name, gem.season, picks(gem.name) ? `${gem.season} pts, on ${picks(gem.name)} tribe${picks(gem.name) === 1 ? "" : "s"}` : `${gem.season} pts, nobody picked them`)}</ul></div>` : ""}
-    ${leaders.length ? `<div class="card stat wide"><h3>Category leaders</h3><ul class="catlead">${leaders.map(l =>
-      `<li><span class="${l.neg ? "negv" : ""}">${esc(l.cat)}</span><b>${esc(l.who.join(", "))}</b><em>×${l.top}</em></li>`).join("")}</ul></div>` : ""}
-  </div>`;
+  return leaders.length ? `<h2>Category leaders</h2><div class="card stat"><ul class="catlead" style="margin-top:0">${leaders.map(l =>
+      `<li><span class="${l.neg ? "negv" : ""}">${esc(l.cat)}</span><b>${esc(l.who.join(", "))}</b><em>×${l.top}</em></li>`).join("")}</ul></div>` : "";
 }
 
 function vCastaways(){
@@ -541,7 +554,8 @@ function vCastaways(){
   return `${statsBlock()}<h2>All castaways</h2><div class="card" style="overflow:hidden"><table class="ctable">
     <thead><tr>${th("name","Castaway")}${th("season","Points","num")}<th class="num">On tribes</th></tr></thead>
     <tbody>${rows}</tbody></table></div>
-    <p class="muted" style="font-size:12px;margin-top:10px">Tap a castaway to see their points by episode.</p>`;
+    <p class="muted" style="font-size:12px;margin-top:10px">Tap a castaway to see their points by episode.</p>
+    ${leadersBlock()}`;
 }
 
 function vEpisodes(){
@@ -573,7 +587,7 @@ function header(){
   const through = D.latest ? `Scores through Episode ${D.latest}` : "Season starts soon";
   $("#sub").textContent = through + (D.merge < 99 ? ` · merged at Ep ${D.merge - 1}` : "");
   const p = D.pot;
-  $("#pot").innerHTML = p.total ? `<div class="p-total">Pot<b>${esc(p.total)}</b></div><div class="p1">1st<b>${esc(p.p1)}</b></div><div class="p2">2nd<b>${esc(p.p2)}</b></div><div class="p3">3rd<b>${esc(p.p3)}</b></div>` : "";
+  $("#pot").innerHTML = p.total ? `<div class="p-total">Pot<b>${esc(p.total)}</b></div><div class="p1">🥇 1st<b>${esc(p.p1)}</b></div><div class="p2">🥈 2nd<b>${esc(p.p2)}</b></div><div class="p3">🥉 3rd<b>${esc(p.p3)}</b></div>` : "";
 }
 
 async function load(){
