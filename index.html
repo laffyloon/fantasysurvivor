@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Survivor 51 Fantasy League</title>
+<meta name="description" content="Live standings, tribes and scoring for the Survivor 51 fantasy league.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f1e4; --surface:#ffffff; --surface-2:#fbf7ec; --line:#e6dcc4;
+  --ink:#2b2a26; --ink-2:#5f5b52; --ink-3:#8d877a;
+  --lime:#afe313; --lime-ink:#3d5200; --orange:#ff9900; --orange-ink:#8a4b00;
+  --slate:#899499; --slate-dark:#5d676c; --neg:#c0392b; --pos:#2e7d32;
+  --gold:#e0a400; --silver:#9aa3a7; --bronze:#b8763a;
+  --shadow:0 1px 2px rgba(60,50,20,.06),0 2px 8px rgba(60,50,20,.06);
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1a17; --surface:#25241f; --surface-2:#2c2b25; --line:#3a382f;
+    --ink:#f1ede2; --ink-2:#c9c3b3; --ink-3:#978f7e;
+    --lime-ink:#cdf26b; --orange-ink:#ffb84d; --slate-dark:#aab4b8; --neg:#ff7b6b; --pos:#7fd88a;
+    --shadow:0 1px 2px rgba(0,0,0,.3);
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 Roboto,system-ui,-apple-system,Segoe UI,sans-serif;-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit;color:inherit}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+header.top{background:linear-gradient(135deg,#2d3a0a 0%,#4a5c10 55%,#7a4a00 100%);color:#fff;padding:22px 0 18px}
+.brand{display:flex;align-items:center;gap:12px}
+.torch{width:38px;height:38px;flex:none}
+h1{font:800 26px/1.05 "Roboto Condensed",Roboto,sans-serif;letter-spacing:.3px;margin:0;text-transform:uppercase}
+.sub{opacity:.85;font-size:13px;margin-top:4px}
+.pot{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.pot div{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:6px 10px;font-size:12px;line-height:1.2}
+.pot b{display:block;font:700 17px "Roboto Condensed",Roboto,sans-serif}
+nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.tabs button{background:none;border:0;padding:13px 9px 11px;font:700 13px "Roboto Condensed",Roboto,sans-serif;letter-spacing:.4px;text-transform:uppercase;color:var(--ink-3);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--lime)}
+main{padding:16px 0 48px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.muted{color:var(--ink-3)}
+.row{display:flex;align-items:center;gap:12px}
+.spacer{flex:1}
+.search{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);margin-bottom:12px;outline:none}
+.search:focus{border-color:var(--lime)}
+/* standings */
+.st-list{list-style:none;margin:0;padding:0}
+.st-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-top:1px solid var(--line);cursor:pointer}
+.st-item:first-child{border-top:0}
+.st-item:hover{background:var(--surface-2)}
+.rank{width:40px;flex:none;text-align:center;font:800 16px "Roboto Condensed",Roboto,sans-serif;color:var(--ink-2)}
+.rank small{display:block;font:500 10px Roboto,sans-serif;color:var(--ink-3);letter-spacing:.4px}
+.medal{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;color:#fff;font:800 15px "Roboto Condensed",Roboto,sans-serif}
+.m1{background:var(--gold)}.m2{background:var(--silver)}.m3{background:var(--bronze)}
+.who{min-width:0;flex:1}
+.who b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who span{display:block;font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score{font:800 22px "Roboto Condensed",Roboto,sans-serif;min-width:44px;text-align:right}
+.chev{color:var(--ink-3);flex:none}
+/* tribe */
+.picker{display:flex;gap:8px;align-items:center;margin-bottom:14px}
+.picker select{flex:1;min-width:0;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.hero{padding:18px}
+.hero .tname{font:800 24px/1.1 "Roboto Condensed",Roboto,sans-serif}
+.hero .leader{color:var(--ink-2);margin-top:2px}
+.big{font:800 46px/1 "Roboto Condensed",Roboto,sans-serif}
+.pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+.pill.tiny{font-size:10px;padding:1px 6px;vertical-align:1px}
+.pill.lime{background:var(--lime);border-color:var(--lime);color:#243000}
+.pill.orange{background:#fff1db;border-color:#ffd9a0;color:#8a4b00}
+@media (prefers-color-scheme: dark){.pill.orange{background:#3d2a0d;border-color:#6b4a16;color:#ffb84d}}
+.breakdown{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+.breakdown div{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 6px;text-align:center}
+.breakdown b{display:block;font:800 20px "Roboto Condensed",Roboto,sans-serif}
+.breakdown span{font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.4px}
+h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-2);margin:22px 2px 8px}
+.players{list-style:none;margin:0;padding:0}
+.player{padding:12px 14px;border-top:1px solid var(--line)}
+.player:first-child{border-top:0}
+.player .top{display:flex;align-items:center;gap:10px}
+.avatar{width:36px;height:36px;border-radius:50%;flex:none;display:grid;place-items:center;font:800 14px "Roboto Condensed",Roboto,sans-serif;color:#fff;background:var(--slate)}
+.player.dropped{opacity:.55}
+.player .pts{font:800 20px "Roboto Condensed",Roboto,sans-serif;text-align:right}
+.player .pts small{display:block;font:500 11px Roboto,sans-serif;color:var(--ink-3)}
+.cats{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.cat{font-size:11px;padding:2px 7px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+.cat.neg{color:var(--neg)}
+.star{color:var(--orange);font-size:14px}
+/* bars */
+.bars{display:flex;align-items:flex-end;gap:6px;height:140px;padding:14px 14px 0}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+.bar i{display:block;width:100%;max-width:34px;border-radius:5px 5px 0 0;background:var(--lime);min-height:2px}
+.bar i.neg{background:var(--neg);border-radius:0 0 5px 5px}
+.bar i.post{background:var(--orange)}
+.bar em{font-style:normal;font:700 12px "Roboto Condensed",Roboto,sans-serif;margin-bottom:3px;color:var(--ink-2)}
+.barlabels{display:flex;gap:6px;padding:6px 14px 12px;border-top:1px solid var(--line);margin-top:0}
+.barlabels span{flex:1;text-align:center;font-size:11px;color:var(--ink-3)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--ink-3);padding:0 14px 12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+/* castaways */
+.ctable{width:100%;border-collapse:collapse}
+.ctable th{font:700 11px Roboto,sans-serif;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-3);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;user-select:none}
+.ctable th.num,.ctable td.num{text-align:right}
+.ctable td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
+.ctable tr.main{cursor:pointer}
+.ctable tr.main:hover td{background:var(--surface-2)}
+.ctable tr.detail td{background:var(--surface-2);border-top:0;padding-top:0}
+.eps{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:4px;margin-top:8px}
+.eps div{text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:3px 0;font-size:12px}
+.eps div small{display:block;color:var(--ink-3);font-size:10px}
+.pos{color:var(--pos)}.negv{color:var(--neg)}
+/* episodes */
+.epchips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:thin}
+.epchips button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font:700 13px "Roboto Condensed",Roboto,sans-serif;cursor:pointer;white-space:nowrap}
+.epchips button[aria-pressed=true]{background:var(--lime);border-color:var(--lime);color:#243000}
+.ev{padding:12px 14px;border-top:1px solid var(--line)}
+.ev:first-child{border-top:0}
+.ev .head{display:flex;gap:10px;align-items:baseline}
+.ev .val{font:800 15px "Roboto Condensed",Roboto,sans-serif;min-width:34px}
+.names{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.names span{font-size:13px;padding:3px 9px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line)}
+.state{padding:40px 16px;text-align:center;color:var(--ink-3)}
+.foot{font-size:12px;color:var(--ink-3);text-align:center;margin-top:28px}
+.foot button{background:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;color:var(--ink-2);margin-left:6px}
+.grid2{display:grid;gap:12px}
+@media (min-width:700px){.grid2{grid-template-columns:1fr 1fr}.big{font-size:54px}}
+@media (max-width:420px){.breakdown{grid-template-columns:repeat(2,1fr)}.ctable .hide-sm{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg class="torch" viewBox="0 0 40 40" aria-hidden="true">
+        <path d="M20 3c4 6 8 9 8 15a8 8 0 0 1-16 0c0-4 2-6 3-9 1 3 2 4 3 4 0-4 0-7 2-10z" fill="#ff9900"/>
+        <path d="M20 11c2 3 4 5 4 8a4 4 0 0 1-8 0c0-2 1-3 2-5 .5 1.5 1 2 2 2 0-2-.5-3 0-5z" fill="#ffd166"/>
+        <rect x="16" y="25" width="8" height="4" rx="1" fill="#afe313"/>
+        <path d="M17 29h6l-1.5 9h-3z" fill="#8b6a3e"/>
+      </svg>
+      <div>
+        <h1>Survivor 51 Fantasy</h1>
+        <div class="sub" id="sub">Loading scores…</div>
+      </div>
+    </div>
+    <div class="pot" id="pot"></div>
+  </div>
+</header>
+<nav class="tabs" aria-label="Sections">
+  <div class="wrap" role="tablist">
+    <button role="tab" data-view="standings" aria-selected="true">Standings</button>
+    <button role="tab" data-view="tribe" aria-selected="false">Tribes</button>
+    <button role="tab" data-view="castaways" aria-selected="false">Castaways</button>
+    <button role="tab" data-view="episodes" aria-selected="false">Episodes</button>
+  </div>
+</nav>
+<main class="wrap" id="app"><div class="state">Loading scores…</div></main>
+
+<script>
+/* ============ CONFIG: the published master sheet ============ */
+const PUB = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSqBPKyWh1EMRMfb-zVIaZuVErk-BmHfEBw-odyJJ_0HdnbFkQZORSWEOAWPFJu5hu_XuagnOfNeK_X/pub";
+const TABS = { standings: 0, log: 1, tribes: 2, castaways: 3 };   // sheet gids
+/* ============================================================ */
+
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = v => { const n = parseFloat(String(v ?? "").replace(/[$,]/g,"")); return isNaN(n) ? 0 : n; };
+const signed = n => (n > 0 ? "+" : "") + n;
+
+function parseCSV(text){
+  const rows = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < text.length; i++){
+    const c = text[i];
+    if (q){
+      if (c === '"'){ if (text[i+1] === '"'){ cell += '"'; i++; } else q = false; }
+      else cell += c;
+    } else if (c === '"') q = true;
+    else if (c === ","){ row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r"){
+      if (c === "\r" && text[i+1] === "\n") i++;
+      row.push(cell); rows.push(row); row = []; cell = "";
+    } else cell += c;
+  }
+  if (cell !== "" || row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+async function getTab(gid){
+  const url = `${PUB}?gid=${gid}&single=true&output=csv&t=${Date.now()}`;
+  const r = await fetch(url, { cache: "no-store" });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return parseCSV(await r.text());
+}
+const col = (header, name) => header.findIndex(h => h.trim().toUpperCase() === name.toUpperCase());
+const colStarts = (header, name) => header.findIndex(h => h.trim().toUpperCase().startsWith(name.toUpperCase()));
+
+let D = null;
+let view = "standings";
+
+function model(st, lg, tb, cp){
+  // settings live in the Standings tab, columns K:L
+  const settings = {};
+  st.forEach(r => { if (r[10]) settings[r[10].trim()] = (r[11] ?? "").trim(); });
+  const merge = num(settings["First post-merge episode (DO NOT EDIT)"]) || 99;
+
+  // castaways (top table on Castaway Points)
+  const ch = cp[0];
+  const epCols = [];
+  for (let e = 2; e <= 13; e++){ const i = col(ch, String(e)); if (i >= 0) epCols.push([e, i]); }
+  const cI = {
+    name: col(ch,"CASTAWAY"), season: col(ch,"SEASON"), cats: col(ch,"CATS HIT"), made: colStarts(ch,"MADE MERGE"),
+    pre: col(ch,"PRE-MERGE PTS"), post: col(ch,"POST-MERGE PTS"), bonus: col(ch,"BONUS PTS"),
+    full: col(ch,"FULL NAME"), catlist: col(ch,"CATEGORIES")
+  };
+  const castaways = [];
+  for (let i = 1; i < cp.length; i++){
+    const r = cp[i]; if (!r[cI.name] || !r[cI.name].trim()) break;
+    castaways.push({
+      name: r[cI.name].trim(), full: r[cI.full] || "", season: num(r[cI.season]), catsHit: num(r[cI.cats]),
+      made: String(r[cI.made]).toUpperCase() === "TRUE", pre: num(r[cI.pre]), post: num(r[cI.post]), bonus: num(r[cI.bonus]),
+      eps: Object.fromEntries(epCols.map(([e, j]) => [e, num(r[j])])),
+      categories: (r[cI.catlist] || "").split(";").map(s => s.trim()).filter(Boolean)
+    });
+  }
+  const byName = Object.fromEntries(castaways.map(c => [c.name.toLowerCase(), c]));
+
+  // episode log
+  const lh = lg[0];
+  const logEps = [];
+  for (let e = 2; e <= 13; e++){ const i = col(lh, "Ep " + e); if (i >= 0) logEps.push([e, i]); }
+  const events = [];
+  const pointsFor = {};
+  for (let i = 1; i < lg.length; i++){
+    const r = lg[i]; const label = (r[0] || "").trim();
+    if (!label || label.toLowerCase().startsWith("spell check")) continue;
+    const pts = r[1];
+    if (pts === undefined || pts === "") continue; // section header
+    pointsFor[label] = num(pts);
+    logEps.forEach(([e, j]) => {
+      const names = (r[j] || "").split(",").map(s => s.trim()).filter(Boolean);
+      if (names.length) events.push({ ep: e, label, pts: num(pts), names });
+    });
+  }
+  const latest = events.reduce((m, ev) => Math.max(m, ev.ep), 0);
+
+  // tribes
+  const th = tb[0];
+  const tI = n => col(th, n);
+  const tribes = [];
+  for (let i = 1; i < tb.length; i++){
+    const r = tb[i]; const leader = (r[tI("LEADER")] || "").trim(); if (!leader) continue;
+    const draft = [1,2,3,4,5].map(k => (r[tI("DRAFT " + k)] || "").trim()).filter(Boolean);
+    const after = [1,2,3,4,5].map(k => (r[tI("AFTER MERGE " + k)] || "").trim()).filter(Boolean);
+    tribes.push({
+      leader, tribe: (r[tI("TRIBE")] || "").trim(), draft, after, ss: (r[tI("SOLE SURVIVOR")] || "").trim(),
+      pre: num(r[tI("PRE-MERGE")]), post: num(r[tI("POST-MERGE")]), ssPts: num(r[tI("SS +1")]),
+      bonus: num(r[tI("BONUSES")]), total: num(r[tI("TOTAL")])
+    });
+  }
+  // rank from totals (ties share a rank)
+  tribes.forEach(t => { t.rank = 1 + tribes.filter(o => o.total > t.total).length; t.tied = tribes.filter(o => o.total === t.total).length > 1; });
+
+  return { settings, merge, castaways, byName, events, latest, tribes, pointsFor,
+    pot: { total: settings["Total collected"], p1: settings["First place (70%)"], p2: settings["Second place (20%)"], p3: settings["Third place (10%)"] },
+    winner: settings["Winner"] || "" };
+}
+
+function rosterAt(t, ep){ return (ep >= D.merge && t.after.length) ? t.after : t.draft; }
+function tribeEpisodePoints(t){
+  const out = [];
+  for (let e = 2; e <= Math.max(D.latest, 2); e++){
+    const roster = rosterAt(t, e);
+    out.push({ ep: e, pts: roster.reduce((s, n) => s + (D.byName[n.toLowerCase()]?.eps[e] || 0), 0), post: e >= D.merge });
+  }
+  return out;
+}
+const initials = n => n.split(/\s+/).map(w => w[0]).join("").slice(0,2).toUpperCase();
+const hue = n => { let h = 0; for (const c of n) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+const avatar = n => `<div class="avatar" style="background:hsl(${hue(n)} 32% 46%)">${esc(initials(n))}</div>`;
+const isNeg = label => (D.pointsFor[label] ?? 0) < 0;
+
+/* ---------------- views ---------------- */
+function vStandings(){
+  const q = (store.get("s51.q") || "");
+  const sorted = [...D.tribes].sort((a,b) => b.total - a.total || a.leader.localeCompare(b.leader));
+  const items = sorted.filter(t => !q || (t.leader + " " + t.tribe).toLowerCase().includes(q.toLowerCase())).map(t => {
+    const r = t.rank <= 3 ? `<span class="medal m${t.rank}">${t.rank}</span>` : `${t.rank}`;
+    return `<li class="st-item" data-leader="${esc(t.leader)}">
+      <div class="rank">${r}${t.tied ? "<small>TIED</small>" : ""}</div>
+      <div class="who"><b>${esc(t.leader)}</b><span>${esc(t.tribe)}</span></div>
+      <div class="score">${t.total}</div>
+      <svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    </li>`;
+  }).join("");
+  return `<input class="search" id="q" placeholder="Find a tribe or leader" value="${esc(q)}" aria-label="Search tribes">
+    <div class="card"><ul class="st-list">${items || '<li class="state">No matches</li>'}</ul></div>`;
+}
+
+function vTribe(){
+  const sel = store.get("s51.tribe");
+  const tribes = [...D.tribes].sort((a,b) => a.leader.localeCompare(b.leader));
+  const t = tribes.find(x => x.leader === sel) || tribes[0];
+  const opts = tribes.map(x => `<option ${x === t ? "selected" : ""}>${esc(x.leader)}</option>`).join("");
+  const merged = D.merge < 99;
+  const swapped = merged && t.after.length;
+  const current = swapped ? t.after : t.draft;
+  const dropped = swapped ? t.draft.filter(n => !t.after.includes(n)) : [];
+  const added = swapped ? t.after.filter(n => !t.draft.includes(n)) : [];
+
+  const playerRow = (n, kind) => {
+    const c = D.byName[n.toLowerCase()] || { full:"", eps:{}, pre:0, post:0, bonus:0, categories:[] };
+    let pts, note;
+    if (kind === "dropped"){ pts = c.pre; note = `through Ep ${D.merge - 1}`; }
+    else if (!merged){ pts = c.pre; note = "this season"; }
+    else if (added.includes(n)){ pts = c.post + c.bonus; note = `from Ep ${D.merge}`; }
+    else { pts = c.pre + c.post + c.bonus; note = "for this tribe"; }
+    const ss = t.ss && t.ss === n;
+    const tags = [
+      ss ? '<span class="pill orange">★ Sole Survivor</span>' : "",
+      kind === "added" ? '<span class="pill lime">Added at merge</span>' : "",
+      kind === "dropped" ? '<span class="pill">Dropped at merge</span>' : "",
+      c.made ? '<span class="pill">Made merge</span>' : "",
+      D.winner && D.winner === n ? '<span class="pill orange">Sole Survivor winner</span>' : ""
+    ].join(" ");
+    const cats = c.categories.map(x => `<span class="cat ${isNeg(x) ? "neg" : ""}">${esc(x)}</span>`).join("");
+    return `<li class="player ${kind === "dropped" ? "dropped" : ""}">
+      <div class="top">${avatar(n)}
+        <div class="who"><b>${esc(n)}</b><span>${esc(c.full)}</span></div>
+        <div class="pts">${pts}<small>${note}</small></div>
+      </div>
+      ${tags.trim() ? `<div class="cats" style="margin-top:8px">${tags}</div>` : ""}
+      ${cats ? `<div class="cats">${cats}</div>` : ""}
+    </li>`;
+  };
+
+  const epPts = tribeEpisodePoints(t);
+  const maxAbs = Math.max(1, ...epPts.map(e => Math.abs(e.pts)));
+  const bars = epPts.map(e => {
+    const h = Math.round(Math.abs(e.pts) / maxAbs * 100);
+    return `<div class="bar"><em>${e.pts ? e.pts : ""}</em><i class="${e.pts < 0 ? "neg" : ""} ${e.post ? "post" : ""}" style="height:${Math.max(h, 2)}%"></i></div>`;
+  }).join("");
+  const labels = epPts.map(e => `<span>${e.ep}</span>`).join("");
+
+  return `<div class="picker"><select id="tribeSel" aria-label="Choose a tribe">${opts}</select></div>
+  <div class="card hero">
+    <div class="row">
+      <div style="min-width:0;flex:1">
+        <div class="tname">${esc(t.tribe)}</div>
+        <div class="leader">${esc(t.leader)}</div>
+        <div style="margin-top:8px"><span class="pill ${t.rank <= 3 ? "lime" : ""}">${t.tied ? "Tied " : ""}#${t.rank} of ${D.tribes.length}</span></div>
+      </div>
+      <div style="text-align:right"><div class="big">${t.total}</div><div class="muted" style="font-size:12px">POINTS</div></div>
+    </div>
+    <div class="breakdown">
+      <div><b>${t.pre}</b><span>Pre-merge</span></div>
+      <div><b>${t.post}</b><span>Post-merge</span></div>
+      <div><b>${t.ssPts}</b><span>Sole Surv. +1</span></div>
+      <div><b>${t.bonus}</b><span>Bonuses</span></div>
+    </div>
+  </div>
+  <h2>Points by episode</h2>
+  <div class="card">
+    <div class="bars">${bars}</div>
+    <div class="barlabels">${labels}</div>
+    ${merged ? `<div class="legend"><span><i style="background:var(--lime)"></i>Pre-merge</span><span><i style="background:var(--orange)"></i>Post-merge</span></div>` : ""}
+  </div>
+  <h2>${swapped ? "Tribe after the merge" : "Tribe"}</h2>
+  <div class="card"><ul class="players">${current.map(n => playerRow(n, added.includes(n) ? "added" : "")).join("")}</ul></div>
+  ${dropped.length ? `<h2>Dropped at the merge</h2><div class="card"><ul class="players">${dropped.map(n => playerRow(n, "dropped")).join("")}</ul></div>` : ""}
+  <p class="muted" style="font-size:12px;margin-top:10px">Sole Survivor +1 and one-time bonuses (made merge, final tribal, winner, most categories) are included in the totals above.</p>`;
+}
+
+function vCastaways(){
+  const sortKey = store.get("s51.csort") || "season";
+  const list = [...D.castaways].sort((a,b) => sortKey === "name" ? a.name.localeCompare(b.name) : (b[sortKey] - a[sortKey]) || a.name.localeCompare(b.name));
+  const onTribes = n => D.tribes.filter(t => rosterAt(t, Math.max(D.latest, 2)).includes(n)).length;
+  const open = store.get("s51.copen") || "";
+  const rows = list.map(c => {
+    const epsHtml = Object.entries(c.eps).filter(([e]) => +e <= Math.max(D.latest, 2)).map(([e, v]) =>
+      `<div><small>Ep ${e}</small><b class="${v > 0 ? "pos" : v < 0 ? "negv" : ""}">${v}</b></div>`).join("");
+    const cats = c.categories.map(x => `<span class="cat ${isNeg(x) ? "neg" : ""}">${esc(x)}</span>`).join("") || '<span class="muted">No points yet</span>';
+    return `<tr class="main" data-c="${esc(c.name)}">
+        <td style="width:55%"><b>${esc(c.name)}</b>${c.made ? ' <span class="pill tiny">Merge</span>' : ""}<div class="muted hide-sm" style="font-size:12px">${esc(c.full)}</div></td>
+        <td class="num"><b>${c.season}</b></td>
+        <td class="num">${c.catsHit}</td>
+        <td class="num hide-sm">${onTribes(c.name)}</td>
+      </tr>
+      ${open === c.name ? `<tr class="detail"><td colspan="4"><div class="cats">${cats}</div><div class="eps">${epsHtml}</div></td></tr>` : ""}`;
+  }).join("");
+  const th = (k, label, cls="") => `<th class="${cls}" data-sort="${k}">${label}${sortKey === k ? " ▾" : ""}</th>`;
+  return `<div class="card" style="overflow:hidden"><table class="ctable">
+    <thead><tr>${th("name","Castaway")}${th("season","Points","num")}${th("catsHit","Categories","num")}<th class="num hide-sm">On tribes</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>
+    <p class="muted" style="font-size:12px;margin-top:10px">Tap a castaway to see points by episode and every category they've scored in.</p>`;
+}
+
+function vEpisodes(){
+  const eps = [...new Set(D.events.map(e => e.ep))].sort((a,b) => a - b);
+  if (!eps.length) return `<div class="card state">No episodes scored yet.</div>`;
+  let ep = +store.get("s51.ep"); if (!eps.includes(ep)) ep = eps[eps.length - 1];
+  const chips = eps.map(e => `<button aria-pressed="${e === ep}" data-ep="${e}">Ep ${e}${e === D.merge - 1 ? " · merge" : ""}</button>`).join("");
+  const evs = D.events.filter(e => e.ep === ep).map(e => `<div class="ev">
+      <div class="head"><span class="val ${e.pts < 0 ? "negv" : "pos"}">${signed(e.pts)}</span><b>${esc(e.label)}</b></div>
+      <div class="names">${e.names.map(n => `<span>${esc(n)}</span>`).join("")}</div></div>`).join("");
+  const top = [...D.castaways].map(c => ({ n: c.name, p: c.eps[ep] || 0 })).filter(x => x.p !== 0).sort((a,b) => b.p - a.p).slice(0, 5);
+  return `<div class="epchips">${chips}</div>
+    <div class="grid2">
+      <div><h2 style="margin-top:0">What happened</h2><div class="card">${evs}</div></div>
+      <div><h2 style="margin-top:0">Top scorers</h2><div class="card"><ul class="players">${top.map(x =>
+        `<li class="player"><div class="top">${avatar(x.n)}<div class="who"><b>${esc(x.n)}</b></div><div class="pts ${x.p < 0 ? "negv" : ""}">${signed(x.p)}</div></div></li>`).join("")}</ul></div></div>
+    </div>`;
+}
+
+function render(){
+  document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.view === view));
+  const app = $("#app");
+  if (!D){ return; }
+  app.innerHTML = view === "standings" ? vStandings() : view === "tribe" ? vTribe() : view === "castaways" ? vCastaways() : vEpisodes();
+  app.insertAdjacentHTML("beforeend", `<div class="foot">Scores refresh a few minutes after Jeff updates the sheet.<button id="refresh">Refresh</button></div>`);
+}
+
+function header(){
+  const through = D.latest ? `Scores through Episode ${D.latest}` : "Season starts soon";
+  $("#sub").textContent = through + (D.merge < 99 ? ` · merged at Ep ${D.merge - 1}` : "");
+  const p = D.pot;
+  $("#pot").innerHTML = p.total ? `<div>Pot<b>${esc(p.total)}</b></div><div>1st<b>${esc(p.p1)}</b></div><div>2nd<b>${esc(p.p2)}</b></div><div>3rd<b>${esc(p.p3)}</b></div>` : "";
+}
+
+async function load(){
+  try{
+    const [st, lg, tb, cp] = await Promise.all([getTab(TABS.standings), getTab(TABS.log), getTab(TABS.tribes), getTab(TABS.castaways)]);
+    D = model(st, lg, tb, cp);
+    header(); render();
+  }catch(err){
+    $("#sub").textContent = "Couldn't load scores";
+    $("#app").innerHTML = `<div class="card state">Couldn't reach the scoresheet. Check your connection and try again.<br><br><button class="pill" id="refresh" style="cursor:pointer">Try again</button></div>`;
+    console.error(err);
+  }
+}
+
+/* ---------------- events ---------------- */
+document.addEventListener("click", e => {
+  const tab = e.target.closest("nav.tabs button");
+  if (tab){ view = tab.dataset.view; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
+  const st = e.target.closest(".st-item");
+  if (st){ store.set("s51.tribe", st.dataset.leader); view = "tribe"; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
+  const th = e.target.closest("th[data-sort]");
+  if (th){ store.set("s51.csort", th.dataset.sort); render(); return; }
+  const tr = e.target.closest("tr.main");
+  if (tr){ store.set("s51.copen", store.get("s51.copen") === tr.dataset.c ? "" : tr.dataset.c); render(); return; }
+  const epb = e.target.closest(".epchips button");
+  if (epb){ store.set("s51.ep", epb.dataset.ep); render(); return; }
+  if (e.target.id === "refresh"){ $("#sub").textContent = "Refreshing…"; load(); }
+});
+document.addEventListener("change", e => {
+  if (e.target.id === "tribeSel"){ store.set("s51.tribe", e.target.value); render(); }
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "q"){ store.set("s51.q", e.target.value); const pos = e.target.selectionStart; render(); const q = $("#q"); q.focus(); q.setSelectionRange(pos, pos); }
+});
+view = store.get("s51.view") || "standings";
+const hashView = location.hash.replace("#", ""); if (["standings","tribe","castaways","episodes"].includes(hashView)) view = hashView;
+render(); load();
+</script>
+</body>
+</html>
