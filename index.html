@@ -165,6 +165,7 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .ev{padding:12px 14px;border-top:1px solid var(--line)}
 .ev:first-child{border-top:0}
 .ev .head{display:flex;gap:10px;align-items:baseline}
+.ev .note{font-weight:400;font-size:12px;color:var(--ink-3);white-space:nowrap}
 .ev .val{font:800 15px "Roboto Condensed",Roboto,sans-serif;min-width:34px}
 .names{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
 .names span{font-size:13px;padding:3px 9px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line)}
@@ -429,6 +430,15 @@ const avatar = n => {
   if (c && c.gcolor) return `<div class="avatar" style="background:${c.gcolor};color:${inkOn(c.gcolor)}" title="${esc(c.gtribe || "")}">${esc(initials(n))}</div>`;
   return `<div class="avatar" style="background:hsl(${hue(n)} 32% 46%)">${esc(initials(n))}</div>`;
 };
+// short rule reminders shown under category names on the Episodes tab
+const NOTES = [
+  [/hard fall/i, "(to the ego counts)"],
+  [/successful play of idol/i, "(must change vote)"],
+  [/wins individual/i, "(incl. fire making)"],
+  [/first out of challenge/i, "(4+ competitors only)"],
+  [/throws or quits a challenge/i, "(quitting for food counts)"]
+];
+const noteFor = label => (NOTES.find(([re]) => re.test(label)) || [])[1] || "";
 const isNeg = label => (D.pointsFor[label] ?? 0) < 0;
 
 /* ---------------- views ---------------- */
@@ -601,7 +611,7 @@ function vEpisodes(){
   const outEv = gone.length ? `<div class="ev"><div class="head"><span class="val">🔥</span><b>Torch snuffed</b></div>
       <div class="names">${gone.map(c => `<span class="out-name">${esc(c.name)}</span>`).join("")}</div></div>` : "";
   const evs = outEv + D.events.filter(e => e.ep === ep).map(e => `<div class="ev">
-      <div class="head"><span class="val ${e.pts < 0 ? "negv" : "pos"}">${signed(e.pts)}</span><b>${esc(e.label)}</b></div>
+      <div class="head"><span class="val ${e.pts < 0 ? "negv" : "pos"}">${signed(e.pts)}</span><b>${esc(e.label)}${noteFor(e.label) ? ` <small class="note">${esc(noteFor(e.label))}</small>` : ""}</b></div>
       <div class="names">${tally(e.names).map(([n, k]) => `<span>${esc(n)}${k > 1 ? ` <b>×${k}</b>` : ""}</span>`).join("")}</div></div>`).join("");
   const top = [...D.castaways].map(c => ({ n: c.name, p: c.eps[ep] || 0 })).filter(x => x.p !== 0).sort((a,b) => b.p - a.p).slice(0, 5);
   return `<div class="epchips">${chips}</div>
