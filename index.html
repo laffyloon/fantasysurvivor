@@ -133,6 +133,7 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .cats{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
 .cat{font-size:11px;padding:2px 7px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
 .cat.neg{color:var(--neg)}
+.cat b{font-weight:700;color:var(--pos)}.cat.neg b{color:var(--neg)}.cat small{font-size:10px;color:var(--ink-3)}
 .star{color:var(--orange);font-size:14px}
 /* bars */
 .bars{display:flex;align-items:flex-end;gap:6px;height:140px;padding:14px 14px 0}
@@ -471,7 +472,10 @@ function vTribe(){
       c.made ? '<span class="pill">Made merge</span>' : "",
       D.winner && D.winner === n ? '<span class="pill orange">Sole Survivor winner</span>' : ""
     ].join(" ");
-    const cats = c.categories.map(x => `<span class="cat ${isNeg(x) ? "neg" : ""}">${esc(x)}</span>`).join("");
+    const cats = c.categories.map(x => {
+      const k = c.hits?.[x] || 1, p = (D.pointsFor[x] ?? 0) * k;
+      return `<span class="cat ${isNeg(x) ? "neg" : ""}">${esc(x)} <b>${signed(p)}</b>${k > 1 ? ` <small>(×${k})</small>` : ""}</span>`;
+    }).join("");
     return `<li class="player ${kind === "dropped" ? "dropped" : ""} ${c.out ? "out" : ""}">
       <div class="top">${avatar(n)}
         <div class="who"><b class="${c.out ? "out-name" : ""}">${esc(n)}</b><span>${esc(c.full)}</span></div>
