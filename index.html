@@ -432,11 +432,11 @@ const avatar = n => {
 };
 // short rule reminders shown under category names on the Episodes tab
 const NOTES = [
-  [/hard fall/i, "(to the ego counts)"],
-  [/successful play of idol/i, "(must change vote)"],
-  [/wins individual/i, "(incl. fire making)"],
-  [/first out of challenge/i, "(4+ competitors only)"],
-  [/throws or quits a challenge/i, "(quitting for food counts)"]
+  [/hard fall/i, "to the ego counts"],
+  [/successful play of idol/i, "must change vote"],
+  [/wins individual/i, "incl. fire making"],
+  [/first out of challenge/i, "4+ competitors only"],
+  [/throws or quits a challenge/i, "quitting for food counts"]
 ];
 const noteFor = label => (NOTES.find(([re]) => re.test(label)) || [])[1] || "";
 const isNeg = label => (D.pointsFor[label] ?? 0) < 0;
