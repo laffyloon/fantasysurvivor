@@ -334,9 +334,11 @@ function model(st, lg, tb, cp){
 
   // eliminations: the torch-lit row lists everyone still in the game. Anyone missing from a filled-in
   // torch cell is out as of that episode, and stays out.
+  const nameKey = n => n.toLowerCase().replace(/[^a-z]/g, "");   // same idea as the sheet's match name: ignore case and spaces
   const torch = events.filter(ev => /torch lit/i.test(ev.label)).sort((a,b) => a.ep - b.ep);
   castaways.forEach(c => {
-    const hit = torch.find(ev => !ev.names.some(n => n.toLowerCase() === c.name.toLowerCase()));
+    const key = nameKey(c.name);
+    const hit = torch.find(ev => !ev.names.some(n => nameKey(n) === key));
     c.out = hit ? hit.ep : 0;
   });
 
@@ -584,9 +586,13 @@ function vEpisodes(){
   if (!eps.length) return `<div class="card state">No episodes scored yet.</div>`;
   let ep = +store.get("s51.ep"); if (!eps.includes(ep)) ep = eps[eps.length - 1];
   const chips = eps.map(e => `<button aria-pressed="${e === ep}" data-ep="${e}">Ep ${e}${e === D.merge - 1 ? " · merge" : ""}</button>`).join("");
-  const evs = D.events.filter(e => e.ep === ep).map(e => `<div class="ev">
+  const tally = names => { const m = new Map(); names.forEach(n => m.set(n, (m.get(n) || 0) + 1)); return [...m]; };
+  const gone = D.castaways.filter(c => c.out === ep);
+  const outEv = gone.length ? `<div class="ev"><div class="head"><span class="val">🔥</span><b>Torch snuffed</b></div>
+      <div class="names">${gone.map(c => `<span class="out-name">${esc(c.name)}</span>`).join("")}</div></div>` : "";
+  const evs = outEv + D.events.filter(e => e.ep === ep).map(e => `<div class="ev">
       <div class="head"><span class="val ${e.pts < 0 ? "negv" : "pos"}">${signed(e.pts)}</span><b>${esc(e.label)}</b></div>
-      <div class="names">${e.names.map(n => `<span>${esc(n)}</span>`).join("")}</div></div>`).join("");
+      <div class="names">${tally(e.names).map(([n, k]) => `<span>${esc(n)}${k > 1 ? ` <b>×${k}</b>` : ""}</span>`).join("")}</div></div>`).join("");
   const top = [...D.castaways].map(c => ({ n: c.name, p: c.eps[ep] || 0 })).filter(x => x.p !== 0).sort((a,b) => b.p - a.p).slice(0, 5);
   return `<div class="epchips">${chips}</div>
     <div class="grid2">
