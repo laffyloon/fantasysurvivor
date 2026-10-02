@@ -80,7 +80,7 @@ main{padding:16px 0 48px}
 .player.dropped .top,.player.dropped .cats{opacity:.6}
 .st-item:first-child{border-top:0}
 /* voted out */
-.out-name{text-decoration:line-through;text-decoration-color:#d7261e;text-decoration-thickness:2px}
+.out-name{text-decoration:line-through;text-decoration-color:rgba(215,38,30,.85);text-decoration-thickness:1px}
 .player.out .avatar{filter:grayscale(1);opacity:.45}
 .player.out .who b,.player.out .who span,.player.out .pts,.player.out .cats .cat{opacity:.55}
 .player.out .who b{opacity:.7}
@@ -581,7 +581,7 @@ function vCastaways(){
         <td class="num"><b>${c.season}</b></td>
         <td class="num">${onTribes(c.name)}</td>
       </tr>
-      ${open === c.name ? `<tr class="detail"><td colspan="3"><div class="eps">${epsHtml}</div></td></tr>` : ""}`;
+      ${open === c.name ? `<tr class="detail"><td colspan="3"><div class="muted" style="font-size:11px;margin-top:6px">Points by episode</div><div class="eps">${epsHtml}</div></td></tr>` : ""}`;
   }).join("");
   const th = (k, label, cls="") => `<th class="${cls}" data-sort="${k}">${label}${sortKey === k ? " ▾" : ""}</th>`;
   return `${statsBlock()}<h2>All castaways</h2><div class="card" style="overflow:hidden"><table class="ctable">
