@@ -7,7 +7,7 @@
 <meta name="description" content="Live standings, tribes and scoring for the Survivor 51 fantasy league.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 :root{
   --bg:#f6f1e4; --surface:#ffffff; --surface-2:#fbf7ec; --line:#e6dcc4;
@@ -75,8 +75,6 @@ main{padding:16px 0 48px}
 .rankchart text{font:500 10px Roboto,sans-serif;fill:var(--ink-3)}
 .rankchart .lbl{font:600 10px "Roboto Condensed",Roboto,sans-serif;fill:var(--ink-2)}
 .since{margin-top:8px;font-size:13px;font-weight:700;color:var(--orange-ink)}
-.player.dropped .since{opacity:1}
-.player.dropped{opacity:1}
 .player.dropped .top,.player.dropped .cats{opacity:.6}
 .st-item:first-child{border-top:0}
 /* voted out */
@@ -257,9 +255,12 @@ function parseCSV(text){
 }
 async function getTab(gid){
   const url = `${PUB}?gid=${gid}&single=true&output=csv&t=${Date.now()}`;
-  const r = await fetch(url, { cache: "no-store" });
-  if (!r.ok) throw new Error("HTTP " + r.status);
-  return parseCSV(await r.text());
+  const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 20000);
+  try{
+    const r = await fetch(url, { cache: "no-store", signal: ctl.signal });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return await r.text();
+  } finally { clearTimeout(timer); }
 }
 const col = (header, name) => header.findIndex(h => h.trim().toUpperCase() === name.toUpperCase());
 const colStarts = (header, name) => header.findIndex(h => h.trim().toUpperCase().startsWith(name.toUpperCase()));
@@ -362,18 +363,17 @@ function model(st, lg, tb, cp){
     });
   }
   const isOut = n => (byName[n.toLowerCase()]?.out || 0) > 0;
-  tribes.forEach(t => { const r = (merge < 99 && t.after.length) ? t.after : t.draft; t.left = r.filter(n => !isOut(n)).length; t.size = r.length; });
+  tribes.forEach(t => { const r = rosterAt(t, 99, merge); t.left = r.filter(n => !isOut(n)).length; t.size = r.length; });
   // rank from totals (ties share a rank)
   tribes.forEach(t => { t.rank = 1 + tribes.filter(o => o.total > t.total).length; t.tied = tribes.filter(o => o.total === t.total).length > 1; });
 
   // week-by-week totals and ranks, rebuilt from each episode's scores
   const ssVal = num(settings["Sole Survivor +1 value"]) || 1;
   const eps = []; for (let e = 2; e <= Math.max(latest, 2); e++) eps.push(e);
-  const roster = (t, e) => (e >= merge && t.after.length) ? t.after : t.draft;
   tribes.forEach(t => {
     let cum = 0; t.hist = [];
     eps.forEach(e => {
-      const r = roster(t, e);
+      const r = rosterAt(t, e, merge);
       cum += r.reduce((s, n) => s + (byName[n.toLowerCase()]?.eps[e] || 0), 0);
       if (e >= merge && t.ss && r.includes(t.ss)) cum += ssVal * (byName[t.ss.toLowerCase()]?.sig?.[e] || 0);
       t.hist.push({ ep: e, total: cum });
@@ -392,7 +392,8 @@ function model(st, lg, tb, cp){
     winner: settings["Winner"] || "" };
 }
 
-function rosterAt(t, ep){ return (ep >= D.merge && t.after.length) ? t.after : t.draft; }
+// which five count for an episode: after-merge roster (if filled in) from the first post-merge episode on
+function rosterAt(t, ep, merge = D.merge){ return (ep >= merge && t.after.length) ? t.after : t.draft; }
 function tribeEpisodePoints(t){
   const out = [];
   for (let e = 2; e <= Math.max(D.latest, 2); e++){
@@ -585,7 +586,6 @@ function vCastaways(){
   const rows = list.map(c => {
     const epsHtml = Object.entries(c.eps).filter(([e]) => +e <= Math.max(D.latest, 2)).map(([e, v]) =>
       `<div><small>Ep ${e}</small><b class="${v > 0 ? "pos" : v < 0 ? "negv" : ""}">${v}</b></div>`).join("");
-    const cats = c.categories.map(x => `<span class="cat ${isNeg(x) ? "neg" : ""}">${esc(x)}</span>`).join("") || '<span class="muted">No points yet</span>';
     return `<tr class="main ${c.out ? "out" : ""}" data-c="${esc(c.name)}">
         <td style="width:55%"><b class="${c.out ? "out-name" : ""}">${esc(c.name)}</b>${c.made ? ' <span class="pill tiny">Merge</span>' : ""}${c.out ? ` <span class="pill tiny snuffed">Out Ep ${c.out}</span>` : ""}<div class="muted hide-sm" style="font-size:12px">${esc(c.full)}</div></td>
         <td class="num"><b>${c.season}</b></td>
@@ -639,15 +639,22 @@ function header(){
   $("#pot").innerHTML = p.total ? `<div class="p-total">Pot<b>${esc(p.total)}</b></div><div class="p1">🥇 1st<b>${esc(p.p1)}</b></div><div class="p2">🥈 2nd<b>${esc(p.p2)}</b></div><div class="p3">🥉 3rd<b>${esc(p.p3)}</b></div>` : "";
 }
 
+// Show the last scores this browser saw right away, then swap in fresh ones from the sheet.
+const CACHE_KEY = "s51.cache.v1";
+function show(texts){ D = model(...texts.map(parseCSV)); header(); render(); }
 async function load(){
+  let cached = null;
+  try{ cached = JSON.parse(store.get(CACHE_KEY) || "null"); }catch(e){}
+  if (!D && cached?.texts){ try{ show(cached.texts); $("#sub").textContent += " · updating…"; }catch(e){ cached = null; } }
   try{
-    const [st, lg, tb, cp] = await Promise.all([getTab(TABS.standings), getTab(TABS.log), getTab(TABS.tribes), getTab(TABS.castaways)]);
-    D = model(st, lg, tb, cp);
-    header(); render();
+    const texts = await Promise.all([TABS.standings, TABS.log, TABS.tribes, TABS.castaways].map(getTab));
+    if (!cached || cached.texts.join("\u0000") !== texts.join("\u0000")) show(texts); else header();
+    store.set(CACHE_KEY, JSON.stringify({ texts, at: Date.now() }));
   }catch(err){
+    console.error(err);
+    if (D){ header(); $("#sub").textContent += " · couldn't refresh, showing last saved scores"; return; }
     $("#sub").textContent = "Couldn't load scores";
     $("#app").innerHTML = `<div class="card state">Couldn't reach the scoresheet. Check your connection and try again.<br><br><button class="pill" id="refresh" style="cursor:pointer">Try again</button></div>`;
-    console.error(err);
   }
 }
 
