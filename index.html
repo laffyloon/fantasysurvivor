@@ -79,6 +79,16 @@ main{padding:16px 0 48px}
 .player.dropped{opacity:1}
 .player.dropped .top,.player.dropped .cats{opacity:.6}
 .st-item:first-child{border-top:0}
+/* voted out */
+.out-name{text-decoration:line-through;text-decoration-color:#d7261e;text-decoration-thickness:2px}
+.player.out .avatar{filter:grayscale(1);opacity:.45}
+.player.out .who b,.player.out .who span,.player.out .pts,.player.out .cats .cat{opacity:.55}
+.player.out .who b{opacity:.7}
+.pill.snuffed{background:#2b2622;border-color:#2b2622;color:#ffb07a}
+@media (prefers-color-scheme: dark){.pill.snuffed{background:#45291f;border-color:#6b3a28}}
+.ctable tr.out td{color:var(--ink-3)}
+.ctable tr.out td b{color:var(--ink-3)}
+.who span.left{display:inline;color:var(--neg);font-weight:600}
 .st-item:hover{filter:brightness(.97)}
 .rank{width:40px;flex:none;text-align:center;font:800 16px "Roboto Condensed",Roboto,sans-serif;color:var(--ink-2)}
 .rank small{display:block;font:500 10px Roboto,sans-serif;color:var(--ink-3);letter-spacing:.4px}
@@ -322,6 +332,14 @@ function model(st, lg, tb, cp){
   }
   const latest = events.reduce((m, ev) => Math.max(m, ev.ep), 0);
 
+  // eliminations: the torch-lit row lists everyone still in the game. Anyone missing from a filled-in
+  // torch cell is out as of that episode, and stays out.
+  const torch = events.filter(ev => /torch lit/i.test(ev.label)).sort((a,b) => a.ep - b.ep);
+  castaways.forEach(c => {
+    const hit = torch.find(ev => !ev.names.some(n => n.toLowerCase() === c.name.toLowerCase()));
+    c.out = hit ? hit.ep : 0;
+  });
+
   // tribes
   const th = tb[0];
   const tI = n => col(th, n);
@@ -337,6 +355,8 @@ function model(st, lg, tb, cp){
       color: /^#?[0-9a-f]{6}$/i.test((r[tI("COLOR")] || "").trim()) ? "#" + r[tI("COLOR")].trim().replace("#","") : "#899499"
     });
   }
+  const isOut = n => (byName[n.toLowerCase()]?.out || 0) > 0;
+  tribes.forEach(t => { const r = (merge < 99 && t.after.length) ? t.after : t.draft; t.left = r.filter(n => !isOut(n)).length; t.size = r.length; });
   // rank from totals (ties share a rank)
   tribes.forEach(t => { t.rank = 1 + tribes.filter(o => o.total > t.total).length; t.tied = tribes.filter(o => o.total === t.total).length > 1; });
 
@@ -411,7 +431,7 @@ function vStandings(){
     return `<li class="st-item" data-leader="${esc(t.leader)}" style="--tc:${t.color}">
       <span class="swatch"></span>
       <div class="rank">${r}${t.tied ? "<small>TIED</small>" : ""}</div>
-      <div class="who"><b>${esc(t.tribe)}</b><span>${esc(firstName(t.leader))}</span></div>
+      <div class="who"><b>${esc(t.tribe)}</b><span>${esc(firstName(t.leader))}${t.left < t.size ? ` · <span class="left">${t.left} of ${t.size} left</span>` : ""}</span></div>
       <div class="score">${t.total}${moveTag(t)}</div>
       <svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
     </li>`;
@@ -442,6 +462,7 @@ function vTribe(){
     else { pts = c.pre + c.post + c.bonus; note = "for this tribe"; }
     const ss = t.ss && t.ss === n;
     const tags = [
+      c.out ? `<span class="pill snuffed">🔥 Torch snuffed · Ep ${c.out}</span>` : "",
       ss ? '<span class="pill orange">★ Sole Survivor</span>' : "",
       kind === "added" ? '<span class="pill lime">Added at merge</span>' : "",
       kind === "dropped" ? '<span class="pill">Dropped at merge</span>' : "",
@@ -449,9 +470,9 @@ function vTribe(){
       D.winner && D.winner === n ? '<span class="pill orange">Sole Survivor winner</span>' : ""
     ].join(" ");
     const cats = c.categories.map(x => `<span class="cat ${isNeg(x) ? "neg" : ""}">${esc(x)}</span>`).join("");
-    return `<li class="player ${kind === "dropped" ? "dropped" : ""}">
+    return `<li class="player ${kind === "dropped" ? "dropped" : ""} ${c.out ? "out" : ""}">
       <div class="top">${avatar(n)}
-        <div class="who"><b>${esc(n)}</b><span>${esc(c.full)}</span></div>
+        <div class="who"><b class="${c.out ? "out-name" : ""}">${esc(n)}</b><span>${esc(c.full)}</span></div>
         <div class="pts">${pts}<small>${note}</small></div>
       </div>
       ${tags.trim() ? `<div class="cats" style="margin-top:8px">${tags}</div>` : ""}
@@ -474,7 +495,7 @@ function vTribe(){
       <div style="min-width:0;flex:1">
         <div class="tname">${esc(t.tribe)}</div>
         <div class="leader">${esc(t.leader)}</div>
-        <div style="margin-top:8px"><span class="pill">${t.tied ? "Tied " : ""}#${t.rank} of ${D.tribes.length}</span> ${t.move ? `<span class="pill">${t.move > 0 ? "▲ Up " + t.move : "▼ Down " + (-t.move)} since last episode</span>` : ""}</div>
+        <div style="margin-top:8px"><span class="pill">${t.tied ? "Tied " : ""}#${t.rank} of ${D.tribes.length}</span> ${t.left < t.size ? `<span class="pill">${t.left} of ${t.size} players left</span>` : ""} ${t.move ? `<span class="pill">${t.move > 0 ? "▲ Up " + t.move : "▼ Down " + (-t.move)} since last episode</span>` : ""}</div>
       </div>
       <div style="text-align:right"><div class="big">${t.total}</div><div class="muted" style="font-size:12px">POINTS</div></div>
     </div>
@@ -543,8 +564,8 @@ function vCastaways(){
     const epsHtml = Object.entries(c.eps).filter(([e]) => +e <= Math.max(D.latest, 2)).map(([e, v]) =>
       `<div><small>Ep ${e}</small><b class="${v > 0 ? "pos" : v < 0 ? "negv" : ""}">${v}</b></div>`).join("");
     const cats = c.categories.map(x => `<span class="cat ${isNeg(x) ? "neg" : ""}">${esc(x)}</span>`).join("") || '<span class="muted">No points yet</span>';
-    return `<tr class="main" data-c="${esc(c.name)}">
-        <td style="width:55%"><b>${esc(c.name)}</b>${c.made ? ' <span class="pill tiny">Merge</span>' : ""}<div class="muted hide-sm" style="font-size:12px">${esc(c.full)}</div></td>
+    return `<tr class="main ${c.out ? "out" : ""}" data-c="${esc(c.name)}">
+        <td style="width:55%"><b class="${c.out ? "out-name" : ""}">${esc(c.name)}</b>${c.made ? ' <span class="pill tiny">Merge</span>' : ""}${c.out ? ` <span class="pill tiny snuffed">Out Ep ${c.out}</span>` : ""}<div class="muted hide-sm" style="font-size:12px">${esc(c.full)}</div></td>
         <td class="num"><b>${c.season}</b></td>
         <td class="num">${onTribes(c.name)}</td>
       </tr>
