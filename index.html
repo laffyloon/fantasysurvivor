@@ -279,13 +279,15 @@ function model(st, lg, tb, cp){
   const cI = {
     name: col(ch,"CASTAWAY"), season: col(ch,"SEASON"), cats: col(ch,"CATS HIT"), made: colStarts(ch,"MADE MERGE"),
     pre: col(ch,"PRE-MERGE PTS"), post: col(ch,"POST-MERGE PTS"), bonus: col(ch,"BONUS PTS"),
-    full: col(ch,"FULL NAME"), catlist: col(ch,"CATEGORIES")
+    full: col(ch,"FULL NAME"), catlist: col(ch,"CATEGORIES"), gt: col(ch,"GAME TRIBE"), gc: col(ch,"GAME TRIBE COLOR")
   };
   const castaways = [];
   for (let i = 1; i < cp.length; i++){
     const r = cp[i]; if (!r[cI.name] || !r[cI.name].trim()) break;
     castaways.push({
-      name: r[cI.name].trim(), full: r[cI.full] || "", season: num(r[cI.season]), catsHit: num(r[cI.cats]),
+      name: r[cI.name].trim(), full: r[cI.full] || "",
+      gtribe: cI.gt >= 0 ? (r[cI.gt] || "").trim() : "",
+      gcolor: cI.gc >= 0 && /^#?[0-9a-f]{6}$/i.test((r[cI.gc] || "").trim()) ? "#" + r[cI.gc].trim().replace("#","") : "", season: num(r[cI.season]), catsHit: num(r[cI.cats]),
       made: String(r[cI.made]).toUpperCase() === "TRUE", pre: num(r[cI.pre]), post: num(r[cI.post]), bonus: num(r[cI.bonus]),
       eps: Object.fromEntries(epCols.map(([e, j]) => [e, num(r[j])])),
       categories: (r[cI.catlist] || "").split(";").map(s => s.trim()).filter(Boolean)
@@ -422,7 +424,11 @@ function rankChart(t){
 }
 const initials = n => n.split(/\s+/).map(w => w[0]).join("").slice(0,2).toUpperCase();
 const hue = n => { let h = 0; for (const c of n) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
-const avatar = n => `<div class="avatar" style="background:hsl(${hue(n)} 32% 46%)">${esc(initials(n))}</div>`;
+const avatar = n => {
+  const c = D && D.byName[n.toLowerCase()];
+  if (c && c.gcolor) return `<div class="avatar" style="background:${c.gcolor};color:${inkOn(c.gcolor)}" title="${esc(c.gtribe || "")}">${esc(initials(n))}</div>`;
+  return `<div class="avatar" style="background:hsl(${hue(n)} 32% 46%)">${esc(initials(n))}</div>`;
+};
 const isNeg = label => (D.pointsFor[label] ?? 0) < 0;
 
 /* ---------------- views ---------------- */
