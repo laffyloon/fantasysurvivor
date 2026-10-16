@@ -156,6 +156,14 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .eps div{text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:3px 0;font-size:12px}
 .eps div small{display:block;color:var(--ink-3);font-size:10px}
 .pos{color:var(--pos)}.negv{color:var(--neg)}
+/* tribes holding a castaway (Castaways tab detail) */
+.holders{list-style:none;margin:6px 0 4px;padding:0;display:grid;grid-template-columns:1fr;gap:4px}
+@media (min-width:640px){.holders{grid-template-columns:1fr 1fr}}
+.holders li{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface);border:1px solid var(--line);border-radius:8px;cursor:pointer;min-width:0}
+.holders li:hover{border-color:var(--ink-3)}
+.holders i{width:10px;height:10px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.holders b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.holders span{margin-left:auto;font-size:12px;color:var(--ink-3);white-space:nowrap}
 /* episodes */
 .epchips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:thin}
 .epchips button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font:700 13px "Roboto Condensed",Roboto,sans-serif;cursor:pointer;white-space:nowrap}
@@ -322,15 +330,20 @@ function model(st, lg, tb, cp){
   const lh = lg[0];
   const logEps = [];
   for (let e = 2; e <= 13; e++){ const i = col(lh, "Ep " + e); if (i >= 0) logEps.push([e, i]); }
+  // draft mode: the "LIVE ON SITE?" row holds a checkbox per episode. Unticked episodes are drafts and stay
+  // off the site (the sheet already leaves them out of every total). No row at all = every episode is live.
+  const liveRow = lg.find(r => /^live on site/i.test((r[0] || "").trim()));
+  const isLive = j => !liveRow || String(liveRow[j] || "").trim().toUpperCase() === "TRUE";
+  const liveEps = logEps.filter(([e, j]) => isLive(j));
   const events = [];
   const pointsFor = {};
   for (let i = 1; i < lg.length; i++){
     const r = lg[i]; const label = (r[0] || "").trim();
-    if (!label || label.toLowerCase().startsWith("spell check")) continue;
+    if (!label || /^(spell check|live on site)/i.test(label)) continue;
     const pts = r[1];
     if (pts === undefined || pts === "") continue; // section header
     pointsFor[label] = num(pts);
-    logEps.forEach(([e, j]) => {
+    liveEps.forEach(([e, j]) => {
       const names = (r[j] || "").split(",").map(s => s.trim()).filter(Boolean);
       if (names.length) events.push({ ep: e, label, pts: num(pts), names });
     });
@@ -581,7 +594,8 @@ function leadersBlock(){
 function vCastaways(){
   const sortKey = store.get("s51.csort") || "season";
   const list = [...D.castaways].sort((a,b) => sortKey === "name" ? a.name.localeCompare(b.name) : (b[sortKey] - a[sortKey]) || a.name.localeCompare(b.name));
-  const onTribes = n => D.tribes.filter(t => rosterAt(t, Math.max(D.latest, 2)).includes(n)).length;
+  const holders = n => D.tribes.filter(t => rosterAt(t, Math.max(D.latest, 2)).includes(n)).sort((a,b) => a.leader.localeCompare(b.leader));
+  const onTribes = n => holders(n).length;
   const open = store.get("s51.copen") || "";
   const rows = list.map(c => {
     const epsHtml = Object.entries(c.eps).filter(([e]) => +e <= Math.max(D.latest, 2)).map(([e, v]) =>
@@ -591,7 +605,9 @@ function vCastaways(){
         <td class="num"><b>${c.season}</b></td>
         <td class="num">${onTribes(c.name)}</td>
       </tr>
-      ${open === c.name ? `<tr class="detail"><td colspan="3"><div class="muted" style="font-size:11px;margin-top:6px">Points by episode</div><div class="eps">${epsHtml}</div></td></tr>` : ""}`;
+      ${open === c.name ? `<tr class="detail"><td colspan="3"><div class="muted" style="font-size:11px;margin-top:6px">Points by episode</div><div class="eps">${epsHtml}</div>
+        <div class="muted" style="font-size:11px;margin-top:12px">On ${onTribes(c.name)} tribe${onTribes(c.name) === 1 ? "" : "s"}</div>
+        ${holders(c.name).length ? `<ul class="holders">${holders(c.name).map(t => `<li data-leader="${esc(t.leader)}"><i style="background:${t.color}"></i><b>${esc(t.tribe)}</b><span>${esc(firstName(t.leader))}</span></li>`).join("")}</ul>` : '<div class="muted" style="font-size:12px;margin-top:4px">Nobody picked them</div>'}</td></tr>` : ""}`;
   }).join("");
   const th = (k, label, cls="") => `<th class="${cls}" data-sort="${k}">${label}${sortKey === k ? " ▾" : ""}</th>`;
   return `${statsBlock()}<h2>All castaways</h2><div class="card" style="overflow:hidden"><table class="ctable">
@@ -664,6 +680,8 @@ document.addEventListener("click", e => {
   if (go){ view = go.dataset.go; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
   const tab = e.target.closest("nav.tabs button");
   if (tab){ view = tab.dataset.view; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
+  const hold = e.target.closest(".holders li");
+  if (hold){ store.set("s51.tribe", hold.dataset.leader); view = "tribe"; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
   const st = e.target.closest(".st-item");
   if (st){ store.set("s51.tribe", st.dataset.leader); view = "tribe"; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
   const th = e.target.closest("th[data-sort]");
