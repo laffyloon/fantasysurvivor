@@ -273,7 +273,12 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .st-item .who b{color:var(--tn,var(--ink))}
 @media (prefers-color-scheme: dark){.st-item{--tn:var(--tn-d)}}
 .ss{font-style:normal;font-size:11px;color:color-mix(in srgb,var(--orange) 28%,var(--ink-3));margin-right:2px;vertical-align:1px}
-.rp.added span{box-shadow:inset 0 -1.5px 0 color-mix(in srgb,var(--lime) 35%,var(--ink-3))}
+.rp.added span,.addn{box-shadow:inset 0 -1.5px 0 color-mix(in srgb,var(--lime) 35%,var(--ink-3))}
+.addn{text-decoration:none}
+/* My Tribe player notes: same quiet treatment as Standings */
+.ptags{display:flex;flex-wrap:wrap;gap:3px 14px;margin-top:5px;padding-left:46px;font-size:12px;color:var(--ink-3)}
+.ptags .pill{font-size:11px}
+.player.out .ptags{padding-left:38px}
 .rp.hit span{background:color-mix(in srgb,var(--orange) 30%,transparent);border-radius:3px;padding:0 2px}
 @media (max-width:420px){.st-roster{padding-left:52px;padding-right:4px}}
 .keyline{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink-3);margin:0 2px 12px}
@@ -647,9 +652,8 @@ function vTribe(){
     const { pts, note } = kind === "dropped" ? { pts: ptsFor(t, n).pts, note: "for you" } : ptsFor(t, n);
     const ss = t.ss && t.ss === n;
     const tags = [
-      ss ? `<span class="pill orange">★ Sole Survivor${c.out && kind !== "dropped" ? " · no more +1s" : ""}</span>` : "",
-      kind === "added" ? '<span class="pill lime">Added at merge</span>' : "",
-      isJuror(c) ? '<span class="pill">Made merge</span>' : "",
+      ss ? `<span><i class="ss">★</i>Sole Survivor${c.out && kind !== "dropped" ? " · no more +1s" : ""}</span>` : "",
+      kind === "added" ? '<span><u class="addn">Added at merge</u></span>' : "",
       D.winner && D.winner === n ? '<span class="pill orange">Sole Survivor winner</span>' : ""
     ].filter(Boolean).join(" ");
     const sub = kind === "dropped"
@@ -657,10 +661,10 @@ function vTribe(){
       : c.out ? `<span class="outtag">${outText(c)}${c.full ? ` · ${esc(c.full)}` : ""}</span>` : `<span>${esc(c.full)}</span>`;
     return `<li class="player ${kind === "dropped" ? "dropped" : ""} ${c.out && kind !== "dropped" ? "out" : ""}">
       <div class="top">${avatar(n)}
-        <div class="who"><b class="${c.out ? "out-name" : ""}">${esc(n)}</b>${sub}</div>
+        <div class="who"><b class="${c.out ? "out-name" : ""}">${kind === "added" ? `<u class="addn">${esc(n)}</u>` : esc(n)}</b>${sub}</div>
         <div class="pts">${pts}<small>${note}</small></div>
       </div>
-      ${tags ? `<div class="cats" style="margin-top:8px">${tags}</div>` : ""}
+      ${tags ? `<div class="ptags">${tags}</div>` : ""}
       ${kind === "dropped" ? (c.out && c.out < D.merge
         ? `<div class="since" style="color:var(--ink-3)">Already gone before the merge. Good call.</div>`
         : `<div class="since">Scored ${signed(c.post + lateBonus(c))} pts for other tribes since you dropped them</div>`) : ""}
