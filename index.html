@@ -202,12 +202,20 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .rk-lead span{grid-column:1;font-size:12px;color:var(--ink-3)}
 .rk-lead em{grid-row:1/3;grid-column:2;font:800 22px "Roboto Condensed",Roboto,sans-serif;font-style:normal}
 .rk-rest{list-style:none;margin:8px 0 0;padding:6px 0 0;border-top:1px solid var(--line);display:grid;gap:3px}
-.rk-rest li{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:6px;align-items:baseline;font-size:12px;color:var(--ink-3)}
+.rk-rest li{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:6px;align-items:baseline;font-size:12px;color:var(--ink-3)}
 .rk-rest i{font-style:normal;font-size:11px;font-variant-numeric:tabular-nums;opacity:.8}
 .rk-rest span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rk-rest em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums}
+.rk-more{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;margin-top:8px;padding:6px 0 0;border:0;border-top:1px dashed var(--line);background:none;font:700 12px Roboto,sans-serif;color:var(--ink-2);cursor:pointer}
+.rk-more:hover{color:var(--ink)}
+.rk-more:focus-visible{outline:2px solid var(--lime);outline-offset:2px;border-radius:4px}
+/* an opened card takes the full width so the whole list stays readable on a phone */
+.pillars{align-items:start}
+.pillars .pillar.open,.stats .stat.open{grid-column:1/-1}
+.open .rk-rest{display:block;columns:2;column-gap:20px}
+.open .rk-rest li{break-inside:avoid;margin-bottom:3px}
 /* inside .stat cards the older ".stat li" grid would win; reset it for the ranked lists */
-.stat .rk-rest li{grid-template-columns:12px minmax(0,1fr) auto;padding:0;border-top:0}
+.stat .rk-rest li{grid-template-columns:16px minmax(0,1fr) auto;padding:0;border-top:0}
 .stat .rk-rest li span{grid-column:auto;font-size:12px;color:var(--ink-3)}
 .stat .rk-rest li em{grid-row:auto;grid-column:auto;font:700 12px Roboto,sans-serif;font-variant-numeric:tabular-nums}
 .stat li em small{font:500 11px Roboto,sans-serif;color:var(--ink-3);margin-left:1px}
@@ -705,12 +713,12 @@ function statsBlock(){
   const midRecent = recents.length ? recents[Math.floor((recents.length - 1) / 2)] : 0;
   const cold = alive.filter(c => held(c.name) >= need && recent(c) <= midRecent)
     .sort((a,b) => recent(a) - recent(b) || held(b.name) - held(a.name) || a.name.localeCompare(b.name)).slice(0, 3);
-  const last = D.latest;
-  const best = last ? Math.max(...cs.map(c => c.eps[last] || 0)) : 0;
-  const mvps = best > 0 ? cs.filter(c => (c.eps[last] || 0) === best) : [];
   // current rosters (same as the draft until the merge swaps)
   const gems = cs.filter(c => held(c.name) <= 3).sort((a,b) => b.season - a.season || held(a.name) - held(b.name));
   const gem = gems[0];
+  // sleeper: hidden gem on recent form. Most points lately among players still in on 3 or fewer tribes (not the gem)
+  const sleeper = alive.filter(c => held(c.name) <= 3 && c !== gem && recent(c) > 0)
+    .sort((a,b) => recent(b) - recent(a) || held(a.name) - held(b.name) || a.name.localeCompare(b.name))[0];
 
   // ---- season: net points in each pillar of the Episode Log (Outwit, Outplay, ...) ----
   const key = n => n.toLowerCase().replace(/[^a-z]/g, "");
@@ -720,25 +728,28 @@ function statsBlock(){
     const k = pillarOf(ev.label); if (k >= PILLARS.length || /torch lit/i.test(ev.label)) return;   // surviving the week isn't a skill stat
     ev.names.forEach(n => { const c = byKey[key(n)]; if (c) pil[k].set(c, (pil[k].get(c) || 0) + ev.pts); });
   });
-  // top 5: the leader big, the next four small (ties share a number)
-  const rankList = (items, fmt = v => v) => {
+  // top 3 (leader big, next two small), with "Full rankings" to open the whole list; ties share a number
+  const rkOpen = new Set((store.get("s51.rkopen") || "").split("|").filter(Boolean));
+  const rankList = (items, id) => {
     if (!items.length) return "";
     const rk = x => 1 + items.filter(o => o.v > x.v).length;
-    const [lead, ...rest] = items.slice(0, 5);
-    const tied = rest.some(x => rk(x) === 1);
+    const open = rkOpen.has(id);
+    const [lead, ...rest] = open ? items : items.slice(0, 3);
+    const tied = items.slice(1).some(x => rk(x) === 1);
     const sub = [lead.sub, tied ? "tied for 1st" : ""].filter(Boolean).join(" · ");
-    return `<div class="rk-lead"><b class="${lead.c.out ? "out-name" : ""}">${esc(lead.c.name)}</b>${sub ? `<span>${sub}</span>` : ""}<em>${fmt(lead.v)}</em></div>
-      ${rest.length ? `<ol class="rk-rest">${rest.map(x => `<li><i>${rk(x)}</i><span class="${x.c.out ? "out-name" : ""}">${esc(x.c.name)}</span><em>${fmt(x.v)}</em></li>`).join("")}</ol>` : ""}`;
+    return `<div class="rk-lead"><b class="${lead.c.out ? "out-name" : ""}">${esc(lead.c.name)}</b>${sub ? `<span>${sub}</span>` : ""}<em>${lead.v}</em></div>
+      ${rest.length ? `<ol class="rk-rest">${rest.map(x => `<li><i>${rk(x)}</i><span class="${x.c.out ? "out-name" : ""}">${esc(x.c.name)}</span><em>${x.v}</em></li>`).join("")}</ol>` : ""}
+      ${items.length > 3 ? `<button class="rk-more" data-rk="${id}" aria-expanded="${open}">${open ? "Show top 3" : `Full rankings · ${items.length}`}<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="${open ? "M3 7.5l3-3 3 3" : "M3 4.5l3 3 3-3"}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ""}`;
   };
   const pillarCard = (k) => {
     const [, title, color] = PILLARS[k];
     const ranked = [...pil[k]].filter(([, v]) => v > 0).sort((a,b) => b[1] - a[1] || a[0].name.localeCompare(b[0].name)).map(([c, v]) => ({ c, v }));
-    return `<div class="card pillar" style="--pc:${color}"><h3>${title}</h3>${ranked.length ? rankList(ranked) : '<p class="muted">Nobody yet</p>'}</div>`;
+    return `<div class="card pillar ${rkOpen.has(title) ? "open" : ""}" style="--pc:${color}"><h3>${title}</h3>${ranked.length ? rankList(ranked, title) : '<p class="muted">Nobody yet</p>'}</div>`;
   };
   const used = [...new Set(Object.keys(D.pointsFor).map(pillarOf))].filter(k => k < PILLARS.length).sort();
 
-  const mp = [...cs].sort((a,b) => picks(b.name) - picks(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: picks(c.name), sub: `on ${Math.round(picks(c.name) / N * 100)}% of tribes` }));
-  const mh = [...alive].sort((a,b) => held(b.name) - held(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: held(c.name), sub: `on ${Math.round(held(c.name) / N * 100)}% of tribes` }));
+  const mp = [...cs].filter(c => picks(c.name) > 0).sort((a,b) => picks(b.name) - picks(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: picks(c.name), sub: `on ${Math.round(picks(c.name) / N * 100)}% of tribes` }));
+  const mh = [...alive].filter(c => held(c.name) > 0).sort((a,b) => held(b.name) - held(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: held(c.name), sub: `on ${Math.round(held(c.name) / N * 100)}% of tribes` }));
 
   // rock steady: the dependable one. Points every week without the spikes. Only above-median scorers
   // (a steady +1 for surviving isn't dependable), not the season's top 3 (everyone already knows them),
@@ -758,21 +769,21 @@ function statsBlock(){
   const avgTxt = c => (Math.round(mean(weekly(c)) * 10) / 10).toFixed(1);
 
   return `${span ? `<h2 style="margin-top:4px">Right now <small class="h2sub">${span}</small></h2>
-  <p class="muted" style="font-size:13px;margin:-2px 2px 8px">Points over the last ${win.length > 1 ? `${win.length} episodes` : "episode"}, players still in the game. Handy for ${merged ? "swaps" : "the merge swap"}.</p>
+  <p class="muted" style="font-size:13px;margin:-2px 2px 8px">Points over the last ${win.length > 1 ? `${win.length} episodes` : "episode"}, players still in the game.</p>
   <div class="stats">
     <div class="card stat"><h3>📈 Heating up</h3><p class="muted">Most points lately</p><ul>${hot.map(c => row(c.name, signed(recent(c)), `${onTxt(held(c.name))} · ${c.season} this season`)).join("")}</ul></div>
     ${cold.length ? `<div class="card stat"><h3>🧊 Cooling off</h3><p class="muted">Fewest points lately, on ${need}+ tribes</p><ul>${cold.map(c => row(c.name, signed(recent(c)), `${onTxt(held(c.name))} · ${c.season} this season`)).join("")}</ul></div>` : ""}
     ${steady.length ? `<div class="card stat"><h3>🪨 Rock steady</h3><p class="muted">${solidAt}+ points almost every week, no big spikes</p><ul>${steady.map(c => row(c.name, `${avgTxt(c)}<small>/ep</small>`, `${weekly(c).slice(-5).join(" · ")} · ${onTxt(held(c.name))}`)).join("")}</ul></div>` : ""}
     <div class="pair ${steady.length ? "half" : ""}">
-      ${mvps.length ? `<div class="card stat"><h3>⭐ Ep ${last} MVP</h3><p class="muted">Top scorer last episode</p><ul>${mvps.slice(0, 2).map(c => row(c.name, signed(best), onTxt(held(c.name)), c.out)).join("")}</ul></div>` : ""}
+      ${sleeper ? `<div class="card stat"><h3>🎯 Sleeper</h3><p class="muted">Most points lately on 3 or fewer tribes</p><ul>${row(sleeper.name, signed(recent(sleeper)), held(sleeper.name) ? onTxt(held(sleeper.name)) : "nobody has them")}</ul></div>` : ""}
       ${gem ? `<div class="card stat"><h3>💎 Hidden gem</h3><p class="muted">Top scorer on 3 or fewer tribes</p><ul>${row(gem.name, gem.season, held(gem.name) ? onTxt(held(gem.name)) : "nobody has them", gem.out)}</ul></div>` : ""}
     </div>
   </div>` : ""}
   <h2${span ? "" : ' style="margin-top:4px"'}>Season</h2>
-  ${used.length ? `<p class="muted" style="font-size:13px;margin:-2px 2px 8px">Top 5 in each part of the scoring sheet. Torch points left out.</p><div class="pillars">${used.map(pillarCard).join("")}</div>` : ""}
+  ${used.length ? `<p class="muted" style="font-size:13px;margin:-2px 2px 8px">Top 3 in each part of the scoring sheet (torch points left out). Tap Full rankings for everyone.</p><div class="pillars">${used.map(pillarCard).join("")}</div>` : ""}
   <div class="stats" style="margin-top:10px">
-    <div class="card stat ${merged ? "" : "wide"}"><h3>Most picked</h3><p class="muted">At the draft</p>${rankList(mp)}</div>
-    ${merged ? `<div class="card stat"><h3>Most held now</h3><p class="muted">After merge swaps</p>${rankList(mh)}</div>` : ""}
+    <div class="card stat ${merged ? "" : "wide"} ${rkOpen.has("picked") ? "open" : ""}"><h3>Most picked</h3><p class="muted">At the draft</p>${rankList(mp, "picked")}</div>
+    ${merged ? `<div class="card stat ${rkOpen.has("held") ? "open" : ""}"><h3>Most held now</h3><p class="muted">After merge swaps</p>${rankList(mh, "held")}</div>` : ""}
   </div>`;
 }
 // one bar per castaway: how many different categories they've scored in, out of all of them (+5 bonus at season end)
@@ -912,6 +923,9 @@ document.addEventListener("click", e => {
     open.has(rr.dataset.race) ? open.delete(rr.dataset.race) : open.add(rr.dataset.race);
     store.set("s51.raceopen", [...open].join("|")); render(); return;
   }
+  const rkb = e.target.closest(".rk-more");
+  if (rkb){ const open = new Set((store.get("s51.rkopen") || "").split("|").filter(Boolean)); open.has(rkb.dataset.rk) ? open.delete(rkb.dataset.rk) : open.add(rkb.dataset.rk);
+    store.set("s51.rkopen", [...open].join("|")); render(); return; }
   const th = e.target.closest("th[data-sort]");
   if (th){ store.set("s51.csort", th.dataset.sort); render(); return; }
   const tr = e.target.closest("tr.main");
