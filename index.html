@@ -61,7 +61,7 @@ main{padding:16px 0 48px}
 .search:focus{border-color:var(--lime)}
 /* standings */
 .st-list{list-style:none;margin:0;padding:0}
-.st-item{position:relative;display:flex;align-items:center;gap:12px;padding:11px 14px 11px 20px;border-top:1px solid var(--line);cursor:pointer;background:var(--surface);background:color-mix(in srgb,var(--tc,transparent) 13%,var(--surface))}
+.st-item{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:0 12px;padding:11px 14px 11px 20px;border-top:1px solid var(--line);cursor:pointer;background:var(--surface);background:color-mix(in srgb,var(--tc,transparent) 13%,var(--surface))}
 .st-item .swatch{position:absolute;left:0;top:0;bottom:0;width:7px;background:var(--tc);box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
 .st-list .st-item:first-child .swatch{border-top-left-radius:var(--radius)}
 .st-list .st-item:last-child .swatch{border-bottom-left-radius:var(--radius)}
@@ -191,6 +191,16 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .stat li:first-child{border-top:0}
 .stat li span{grid-column:1;font-size:12px;color:var(--ink-3)}
 .stat li em{grid-row:1/3;grid-column:2;font:800 20px "Roboto Condensed",Roboto,sans-serif;font-style:normal}
+.h2sub{font:600 12px Roboto,sans-serif;letter-spacing:.3px;color:var(--ink-3);margin-left:6px;text-transform:none}
+.pillars{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (min-width:640px){.pillars{grid-template-columns:repeat(4,1fr)}}
+.pillar{padding:10px 12px 10px;border-top:4px solid var(--pc);min-width:0}
+.pillar h3{margin:0;font:800 12px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-2)}
+.pl-top{display:flex;align-items:baseline;gap:8px;margin-top:4px}
+.pl-top b{flex:1;min-width:0;font-size:14px;line-height:1.25}
+.pl-top b small{font-size:11px;color:var(--ink-3);font-weight:500}
+.pl-top em{font:800 20px "Roboto Condensed",Roboto,sans-serif;font-style:normal}
+.pillar p{margin:2px 0 0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stat .catlead li{grid-template-columns:1fr auto;gap:0 10px}
 .stat .catlead li span{font-size:13px;color:var(--ink-2)}
 .stat .catlead li b{grid-column:1;font-size:13px}
@@ -221,24 +231,28 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .race-detail h4{margin:8px 0 0;font:700 11px Roboto,sans-serif;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-3)}
 .cat.missing{opacity:.6;border-style:dashed}
 .race-lead{grid-column:1/-1;font-size:11px;font-weight:700;color:var(--orange-ink);margin-top:-2px}
-/* all tribes */
-.tgrid{display:grid;gap:10px}
-@media (min-width:700px){.tgrid{grid-template-columns:1fr 1fr}}
-.tcard{position:relative;overflow:hidden;background:color-mix(in srgb,var(--tc) 9%,var(--surface))}
-.tcard .swatch{position:absolute;left:0;top:0;bottom:0;width:7px;background:var(--tc);box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
-.tc-head{display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px 6px 20px;background:none;border:0;text-align:left;cursor:pointer}
-.tc-head .rank{width:32px}
-.tc-head .score{font-size:20px}
-.pchips{display:flex;flex-wrap:wrap;gap:5px;padding:2px 14px 12px 20px}
-.pchip{display:inline-flex;align-items:center;gap:5px;font-size:13px;padding:3px 9px 3px 7px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
-.pchip i{width:8px;height:8px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+/* standings rosters (folded in from the old All Tribes tab) */
+.dots,.who span.dots{display:inline-flex;gap:3px;margin-left:8px;vertical-align:1px;overflow:visible}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--ink-2);opacity:.75}
+.dots i.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--ink-3);opacity:.6}
+.st-item .chev{transition:transform .15s}
+.st-item.open .chev{transform:rotate(90deg)}
+.st-more{flex-basis:100%;padding:10px 0 2px 52px;cursor:default}
+.st-more .pchips{padding:0}
+.st-more .tc-drop{padding:8px 0 0;margin:0}
+.st-open{margin-top:10px;background:none;border:0;padding:2px 0;font:700 13px Roboto,sans-serif;color:var(--ink-2);cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.st-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;margin:0 2px 8px}
+.st-all{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font:700 12px Roboto,sans-serif;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.st-all[aria-pressed=true]{background:var(--ink-2);border-color:var(--ink-2);color:var(--surface)}
+@media (max-width:420px){.st-more{padding-left:0}}
+.pchips{display:flex;flex-wrap:wrap;gap:5px}
+.pchip{display:inline-flex;align-items:center;gap:5px;font-size:13px;padding:3px 9px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
 .pchip b{font:700 12px "Roboto Condensed",Roboto,sans-serif;color:var(--ink-3)}
 .pchip.added{border-color:var(--lime);box-shadow:inset 0 0 0 1px var(--lime)}
 .pchip.out{background:transparent;color:var(--ink-3)}
 .pchip.out span{text-decoration:line-through;text-decoration-color:rgba(215,38,30,.85)}
-.pchip.out i{filter:grayscale(1);opacity:.5}
 .pchip.hit{outline:2px solid var(--orange);outline-offset:1px}
-.tc-drop{padding:0 14px 12px 20px;margin-top:-4px;font-size:12px;color:var(--ink-3)}
+.tc-drop{font-size:12px;color:var(--ink-3)}
 .tc-drop b{color:var(--orange-ink)}
 .tc-drop span.hit{color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-color:var(--orange)}
 .keyline{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink-3);margin:0 2px 12px}
@@ -269,7 +283,6 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
   <div class="wrap" role="tablist">
     <button role="tab" data-view="standings" aria-selected="true">Standings</button>
     <button role="tab" data-view="tribe" aria-selected="false">My Tribe</button>
-    <button role="tab" data-view="all" aria-selected="false">All Tribes</button>
     <button role="tab" data-view="castaways" aria-selected="false">Castaways</button>
     <button role="tab" data-view="episodes" aria-selected="false">Episodes</button>
   </div>
@@ -535,23 +548,46 @@ const hitsOf = (c, label) => {
 };
 
 /* ---------------- views ---------------- */
+// standings: one quiet row per tribe (dots = players still in), tap to unfold the roster with points
 function vStandings(){
-  const q = (store.get("s51.q") || "");
+  const raw = (store.get("s51.q") || ""), q = raw.trim().toLowerCase();
+  const merged = D.merge < 99;
+  const all = store.get("s51.stall") === "1";
+  const open = new Set((store.get("s51.stopen") || "").split("|").filter(Boolean));
   const sorted = [...D.tribes].sort((a,b) => b.total - a.total || a.leader.localeCompare(b.leader));
-  const items = sorted.filter(t => !q || (t.leader + " " + t.tribe).toLowerCase().includes(q.toLowerCase())).map(t => {
+  const hasPlayer = t => q && [...t.draft, ...t.after].some(n => n.toLowerCase().includes(q));
+  const match = t => !q || (t.leader + " " + t.tribe).toLowerCase().includes(q) || hasPlayer(t);
+  const items = sorted.filter(match).map(t => {
     const r = t.rank <= 3 ? `<span class="medal m${t.rank}">${t.rank}</span>` : `${t.rank}`;
-    return `<li class="st-item" data-leader="${esc(t.leader)}" style="--tc:${t.color}">
+    const roster = rosterAt(t, 99);
+    const order = [...roster.filter(n => !cOf(n).out), ...roster.filter(n => cOf(n).out)];
+    const dots = order.map(n => `<i class="${cOf(n).out ? "off" : ""}"></i>`).join("");
+    const isOpen = all || open.has(t.leader) || hasPlayer(t);
+    let more = "";
+    if (isOpen){
+      const dropped = merged && t.after.length ? t.draft.filter(n => !t.after.includes(n)) : [];
+      const chips = order.map(n => {
+        const c = cOf(n), isAdded = merged && t.after.length && !t.draft.includes(n);
+        const hit = q && n.toLowerCase().includes(q);
+        return `<span class="pchip ${c.out ? "out" : ""} ${isAdded ? "added" : ""} ${hit ? "hit" : ""}" title="${esc(c.full || n)}${c.out ? ` · out Ep ${c.out}` : ""}${isAdded ? " · added at merge" : ""}${t.ss === n ? " · Sole Survivor pick" : ""}">${t.ss === n ? '<span class="star" style="text-decoration:none">★</span>' : ""}<span>${esc(n)}</span><b>${ptsFor(t, n).pts}</b></span>`;
+      }).join("");
+      const drop = dropped.length ? `<div class="tc-drop">Dropped: ${dropped.map(n => { const c = cOf(n); const hit = q && n.toLowerCase().includes(q); return `<span class="${hit ? "hit" : ""}">${esc(n)}</span> ${c.out && c.out < D.merge ? `<i>(out Ep ${c.out})</i>` : `<b>${signed(c.post + c.bonus)}</b> since`}`; }).join(", ")}</div>` : "";
+      more = `<div class="st-more"><div class="pchips">${chips}</div>${drop}<button class="st-open" data-open-tribe="${esc(t.leader)}">Open tribe page ›</button></div>`;
+    }
+    return `<li class="st-item ${isOpen ? "open" : ""}" data-st="${esc(t.leader)}" style="--tc:${t.color}" aria-expanded="${isOpen}">
       <span class="swatch"></span>
       <div class="rank">${r}${t.tied ? "<small>TIED</small>" : ""}</div>
-      <div class="who"><b>${esc(t.tribe)}</b><span>${esc(firstName(t.leader))}${t.left < t.size ? ` · <span class="left">${t.left} of ${t.size} left</span>` : ""}</span></div>
+      <div class="who"><b>${esc(t.tribe)}</b><span>${esc(firstName(t.leader))}<span class="dots" title="${t.left} of ${t.size} still in the game" aria-label="${t.left} of ${t.size} still in the game">${dots}</span></span></div>
       <div class="score">${t.total}${moveTag(t)}</div>
       <svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      ${more}
     </li>`;
   }).join("");
-  return `<button class="findmine" data-go="tribe"><span>See your tribe</span><small>Your players, points and categories</small><b>›</b></button>
-    <p class="muted" style="font-size:13px;margin:0 2px 10px">Or tap any tribe below to see its details.</p>
-    <input class="search" id="q" placeholder="Find a tribe or leader" value="${esc(q)}" aria-label="Search tribes">
-    <div class="card"><ul class="st-list">${items || '<li class="state">No matches</li>'}</ul></div>`;
+  return `<button class="findmine" data-go="tribe"><span>See your tribe</span><small>Your players, points and history</small><b>›</b></button>
+    <input class="search" id="q" placeholder="Find a tribe, leader or castaway" value="${esc(raw)}" aria-label="Search tribes and castaways">
+    <div class="st-tools"><span class="muted">Tap a tribe to see its players</span><button class="st-all" aria-pressed="${all}">${all ? "Hide rosters" : "Show all rosters"}</button></div>
+    <div class="card"><ul class="st-list">${items || '<li class="state">No matches</li>'}</ul></div>
+    <div class="keyline" style="margin-top:10px"><span><span class="dots"><i></i></span> in the game</span><span><span class="dots"><i class="off"></i></span> out</span><span><span class="star">★</span> Sole Survivor pick</span>${merged ? '<span><span class="pchip added" style="padding:0 6px;font-size:11px">green edge</span> added at merge</span>' : ""}<span>Numbers are points for that tribe</span></div>`;
 }
 
 function vTribe(){
@@ -635,30 +671,72 @@ function vTribe(){
   <p class="muted" style="font-size:12px;margin-top:10px">Sole Survivor +1 and one-time bonuses (made merge, final tribal, winner, most categories) are included in the totals above.</p>`;
 }
 
+// Castaways stats: "Right now" moves week to week (last 3 scored episodes), "Season" is the long view
 function statsBlock(){
   const cs = D.castaways;
-  const picks = n => D.tribes.filter(t => t.draft.includes(n)).length;
   const N = D.tribes.length;
-  const row = (name, val, sub) => `<li><b>${esc(name)}</b><span>${sub}</span><em>${val}</em></li>`;
-  // most picked (draft)
-  const mp = [...cs].sort((a,b) => picks(b.name) - picks(a.name) || a.name.localeCompare(b.name)).slice(0,3);
-  // hidden gem: best scorer drafted by 3 or fewer tribes
+  const picks = n => D.tribes.filter(t => t.draft.includes(n)).length;
+  const held = n => D.tribes.filter(t => rosterAt(t, Math.max(D.latest, 2)).includes(n)).length;
+  const onTxt = k => k ? `on ${k} tribe${k === 1 ? "" : "s"}` : "on no tribes";
+  const row = (name, val, sub, out) => `<li><b class="${out ? "out-name" : ""}">${esc(name)}</b><span>${sub}</span><em>${val}</em></li>`;
+  const merged = D.merge < 99;
+
+  // ---- right now: form over the last three scored episodes ----
+  const scored = [...new Set(D.events.map(e => e.ep))].sort((a,b) => a - b);
+  const win = scored.slice(-3);
+  const span = win.length > 1 ? `Eps ${win[0]}–${win[win.length - 1]}` : win.length ? `Ep ${win[0]}` : "";
+  const recent = c => win.reduce((s, e) => s + (c.eps[e] || 0), 0);
+  const alive = cs.filter(c => !c.out);
+  const hot = [...alive].sort((a,b) => recent(b) - recent(a) || b.season - a.season || a.name.localeCompare(b.name)).slice(0, 3);
+  // cooling off: widely held players doing the least lately (the old "biggest bust", but on recent form)
+  const need = Math.max(2, Math.ceil(N * 0.25));
+  const cold = alive.filter(c => held(c.name) >= need)
+    .sort((a,b) => recent(a) - recent(b) || held(b.name) - held(a.name) || a.name.localeCompare(b.name)).slice(0, 3);
+  const last = D.latest;
+  const best = last ? Math.max(...cs.map(c => c.eps[last] || 0)) : 0;
+  const mvps = best > 0 ? cs.filter(c => (c.eps[last] || 0) === best) : [];
   const gems = cs.filter(c => picks(c.name) <= 3).sort((a,b) => b.season - a.season || picks(a.name) - picks(b.name));
   const gem = gems[0];
-  // biggest bust: lowest scorer among castaways drafted by 25%+ of tribes
-  const bust = cs.filter(c => picks(c.name) >= N * 0.25).sort((a,b) => a.season - b.season || picks(b.name) - picks(a.name))[0];
-  // most held right now (after-merge rosters), once the merge has happened
-  const merged = D.merge < 99;
-  const held = n => D.tribes.filter(t => rosterAt(t, 99).includes(n)).length;
-  const mh = [...cs].filter(c => !c.out).sort((a,b) => held(b.name) - held(a.name) || a.name.localeCompare(b.name)).slice(0,3);
-  return `<h2 style="margin-top:4px">Season stats</h2>
+
+  // ---- season: net points in each pillar of the Episode Log (Outwit, Outplay, ...) ----
+  const key = n => n.toLowerCase().replace(/[^a-z]/g, "");
+  const byKey = Object.fromEntries(cs.map(c => [key(c.name), c]));
+  const pil = PILLARS.map(() => new Map());
+  D.events.forEach(ev => {
+    const k = pillarOf(ev.label); if (k >= PILLARS.length) return;
+    ev.names.forEach(n => { const c = byKey[key(n)]; if (c) pil[k].set(c, (pil[k].get(c) || 0) + ev.pts); });
+  });
+  const pillarCard = (k) => {
+    const [, title, color] = PILLARS[k];
+    const ranked = [...pil[k]].filter(([, v]) => v > 0).sort((a,b) => b[1] - a[1] || a[0].name.localeCompare(b[0].name));
+    if (!ranked.length) return `<div class="card pillar" style="--pc:${color}"><h3>${title}</h3><p class="muted">Nobody yet</p></div>`;
+    const top = ranked[0][1], leaders = ranked.filter(([, v]) => v === top).map(([c]) => c);
+    const next = ranked.find(([, v]) => v < top);
+    const names = leaders.slice(0, 2).map(c => `<span class="${c.out ? "out-name" : ""}">${esc(c.name)}</span>`).join(" & ") + (leaders.length > 2 ? ` <small>+${leaders.length - 2}</small>` : "");
+    return `<div class="card pillar" style="--pc:${color}"><h3>${title}</h3>
+      <div class="pl-top"><b>${names}</b><em>${top}</em></div>
+      <p class="muted">${next ? `Next: ${esc(next[0].name)} · ${next[1]}` : leaders.length > 1 ? "Tied at the top" : "&nbsp;"}</p></div>`;
+  };
+  const used = [...new Set(Object.keys(D.pointsFor).map(pillarOf))].filter(k => k < PILLARS.length).sort();
+
+  const mp = [...cs].sort((a,b) => picks(b.name) - picks(a.name) || a.name.localeCompare(b.name)).slice(0,3);
+  const mh = [...alive].sort((a,b) => held(b.name) - held(a.name) || a.name.localeCompare(b.name)).slice(0,3);
+
+  return `${span ? `<h2 style="margin-top:4px">Right now <small class="h2sub">${span}</small></h2>
+  <p class="muted" style="font-size:13px;margin:-2px 2px 8px">Points over the last ${win.length > 1 ? `${win.length} episodes` : "episode"}, players still in the game. Handy for ${merged ? "swaps" : "the merge swap"}.</p>
   <div class="stats">
-    <div class="card stat ${merged ? "" : "wide"}"><h3>Most picked</h3><p class="muted">At the draft</p><ul>${mp.map(c => row(c.name, picks(c.name), `on ${Math.round(picks(c.name) / N * 100)}% of tribes`)).join("")}</ul></div>
-    ${merged ? `<div class="card stat"><h3>Most held now</h3><p class="muted">After merge swaps</p><ul>${mh.map(c => row(c.name, held(c.name), `on ${Math.round(held(c.name) / N * 100)}% of tribes`)).join("")}</ul></div>` : ""}
+    <div class="card stat"><h3>📈 Heating up</h3><p class="muted">Most points lately</p><ul>${hot.map(c => row(c.name, signed(recent(c)), `${onTxt(held(c.name))} · ${c.season} this season`)).join("")}</ul></div>
+    ${cold.length ? `<div class="card stat"><h3>🧊 Cooling off</h3><p class="muted">Fewest points lately, on ${need}+ tribes</p><ul>${cold.map(c => row(c.name, signed(recent(c)), `${onTxt(held(c.name))} · ${c.season} this season`)).join("")}</ul></div>` : ""}
     <div class="pair">
-      ${gem ? `<div class="card stat"><h3>💎 Hidden gem</h3><p class="muted">Top scorer on 3 or fewer tribes</p><ul>${row(gem.name, gem.season, picks(gem.name) ? `on ${picks(gem.name)} tribe${picks(gem.name) === 1 ? "" : "s"}` : "nobody picked them")}</ul></div>` : ""}
-      ${bust ? `<div class="card stat"><h3>🪨 Biggest bust</h3><p class="muted">Lowest scorer on 25%+ of tribes</p><ul>${row(bust.name, bust.season, `on ${picks(bust.name)} tribes`)}</ul></div>` : ""}
+      ${mvps.length ? `<div class="card stat"><h3>⭐ Ep ${last} MVP</h3><p class="muted">Top scorer last episode</p><ul>${mvps.slice(0, 2).map(c => row(c.name, signed(best), onTxt(held(c.name)), c.out)).join("")}</ul></div>` : ""}
+      ${gem ? `<div class="card stat"><h3>💎 Hidden gem</h3><p class="muted">Top scorer on 3 or fewer tribes</p><ul>${row(gem.name, gem.season, picks(gem.name) ? `on ${picks(gem.name)} tribe${picks(gem.name) === 1 ? "" : "s"}` : "nobody picked them", gem.out)}</ul></div>` : ""}
     </div>
+  </div>` : ""}
+  <h2${span ? "" : ' style="margin-top:4px"'}>Season</h2>
+  ${used.length ? `<p class="muted" style="font-size:13px;margin:-2px 2px 8px">Most points from each part of the scoring sheet.</p><div class="pillars">${used.map(pillarCard).join("")}</div>` : ""}
+  <div class="stats" style="margin-top:10px">
+    <div class="card stat ${merged ? "" : "wide"}"><h3>Most picked</h3><p class="muted">At the draft</p><ul>${mp.map(c => row(c.name, picks(c.name), `on ${Math.round(picks(c.name) / N * 100)}% of tribes`, c.out)).join("")}</ul></div>
+    ${merged ? `<div class="card stat"><h3>Most held now</h3><p class="muted">After merge swaps</p><ul>${mh.map(c => row(c.name, held(c.name), `on ${Math.round(held(c.name) / N * 100)}% of tribes`)).join("")}</ul></div>` : ""}
   </div>`;
 }
 // one bar per castaway: how many different categories they've scored in, out of all of them (+5 bonus at season end)
@@ -693,36 +771,6 @@ function raceBlock(){
     <p class="muted" style="font-size:13px;margin:-2px 2px 8px">How many different categories each castaway has scored in, out of ${N}. Most at the end of the season gets +5. Tap anyone to see which ones.</p>
     <div class="card" style="overflow:hidden">${legend ? `<div class="legend" style="padding:12px 14px 4px">${legend}</div>` : ""}<ul class="race">${list}</ul></div>
     <p class="muted" style="font-size:12px;margin-top:8px">Penalties don't count, since they don't earn points.</p>`;
-}
-
-function vAll(){
-  const q = (store.get("s51.aq") || "").trim().toLowerCase();
-  const merged = D.merge < 99;
-  const sorted = [...D.tribes].sort((a,b) => b.total - a.total || a.leader.localeCompare(b.leader));
-  const match = t => !q || (t.leader + " " + t.tribe).toLowerCase().includes(q) || [...t.draft, ...t.after].some(n => n.toLowerCase().includes(q));
-  const cards = sorted.filter(match).map(t => {
-    const roster = rosterAt(t, 99);
-    const order = [...roster.filter(n => !cOf(n).out), ...roster.filter(n => cOf(n).out)];
-    const dropped = merged && t.after.length ? t.draft.filter(n => !t.after.includes(n)) : [];
-    const chips = order.map(n => {
-      const c = cOf(n), isAdded = merged && t.after.length && !t.draft.includes(n);
-      const hit = q && n.toLowerCase().includes(q);
-      return `<span class="pchip ${c.out ? "out" : ""} ${isAdded ? "added" : ""} ${hit ? "hit" : ""}" title="${esc(c.full || n)}${c.out ? ` · out Ep ${c.out}` : ""}${isAdded ? " · added at merge" : ""}"><i style="background:${c.gcolor || "var(--slate)"}"></i>${t.ss === n ? '<span class="star" style="text-decoration:none">★</span>' : ""}<span>${esc(n)}</span><b>${ptsFor(t, n).pts}</b></span>`;
-    }).join("");
-    const r = t.rank <= 3 ? `<span class="medal m${t.rank}">${t.rank}</span>` : `${t.rank}`;
-    return `<div class="card tcard" style="--tc:${t.color}"><span class="swatch"></span>
-      <button class="tc-head" data-open-tribe="${esc(t.leader)}">
-        <div class="rank">${r}${t.tied ? "<small>TIED</small>" : ""}</div>
-        <div class="who"><b>${esc(t.tribe)}</b><span>${esc(firstName(t.leader))}${t.left < t.size ? ` · <span class="left">${t.left} of ${t.size} left</span>` : ""}</span></div>
-        <div class="score">${t.total}${moveTag(t)}</div>
-      </button>
-      <div class="pchips">${chips}</div>
-      ${dropped.length ? `<div class="tc-drop">Dropped: ${dropped.map(n => { const c = cOf(n); const hit = q && n.toLowerCase().includes(q); return `<span class="${hit ? "hit" : ""}">${esc(n)}</span> ${c.out && c.out < D.merge ? `<i>(out Ep ${c.out})</i>` : `<b>${signed(c.post + c.bonus)}</b> since`}`; }).join(", ")}</div>` : ""}
-    </div>`;
-  }).join("");
-  return `<input class="search" id="aq" placeholder="Find a leader, tribe or castaway" value="${esc(store.get("s51.aq") || "")}" aria-label="Search all tribes">
-    <div class="keyline"><span><span class="star">★</span> Sole Survivor pick</span><span><s>Struck</s> = out</span>${merged ? '<span><span class="pchip added" style="padding:0 6px;font-size:11px">green edge</span> = added at merge</span>' : ""}<span>Number = points for that tribe</span></div>
-    <div class="tgrid">${cards || '<div class="card state">No matches</div>'}</div>`;
 }
 
 function vCastaways(){
@@ -780,7 +828,7 @@ function render(){
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.view === view));
   const app = $("#app");
   if (!D){ return; }
-  app.innerHTML = view === "standings" ? vStandings() : view === "tribe" ? vTribe() : view === "all" ? vAll() : view === "castaways" ? vCastaways() : vEpisodes();
+  app.innerHTML = view === "standings" ? vStandings() : view === "tribe" ? vTribe() : view === "castaways" ? vCastaways() : vEpisodes();
   app.insertAdjacentHTML("beforeend", `<div class="foot">Scores refresh a few minutes after Jeff updates the sheet.<button id="refresh">Refresh</button></div>`);
 }
 
@@ -818,8 +866,16 @@ document.addEventListener("click", e => {
   if (tab){ view = tab.dataset.view; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
   const hold = e.target.closest(".holders li");
   if (hold){ store.set("s51.tribe", hold.dataset.leader); view = "tribe"; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
-  const st = e.target.closest(".st-item, [data-open-tribe]");
-  if (st){ store.set("s51.tribe", st.dataset.leader || st.dataset.openTribe); view = "tribe"; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
+  const ot = e.target.closest("[data-open-tribe]");
+  if (ot){ store.set("s51.tribe", ot.dataset.openTribe); view = "tribe"; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
+  if (e.target.closest(".st-all")){ store.set("s51.stall", store.get("s51.stall") === "1" ? "" : "1"); store.set("s51.stopen", ""); render(); return; }
+  const st = e.target.closest(".st-item");
+  if (st && !e.target.closest(".st-more")){
+    const open = new Set((store.get("s51.stopen") || "").split("|").filter(Boolean));
+    if (store.get("s51.stall") === "1"){ store.set("s51.stall", ""); D.tribes.forEach(t => open.add(t.leader)); }
+    open.has(st.dataset.st) ? open.delete(st.dataset.st) : open.add(st.dataset.st);
+    store.set("s51.stopen", [...open].join("|")); render(); return;
+  }
   const rr = e.target.closest(".race-row");
   if (rr && !e.target.closest(".race-detail")){
     const open = new Set((store.get("s51.raceopen") || "").split("|").filter(Boolean));
@@ -838,10 +894,11 @@ document.addEventListener("change", e => {
   if (e.target.id === "tribeSel"){ store.set("s51.tribe", e.target.value); render(); }
 });
 document.addEventListener("input", e => {
-  if (e.target.id === "q" || e.target.id === "aq"){ const id = e.target.id; store.set(id === "q" ? "s51.q" : "s51.aq", e.target.value); const pos = e.target.selectionStart; render(); const q = $("#" + id); q.focus(); q.setSelectionRange(pos, pos); }
+  if (e.target.id === "q"){ const id = e.target.id; store.set("s51.q", e.target.value); const pos = e.target.selectionStart; render(); const q = $("#" + id); q.focus(); q.setSelectionRange(pos, pos); }
 });
 view = store.get("s51.view") || "standings";
-const hashView = location.hash.replace("#", ""); if (["standings","tribe","all","castaways","episodes"].includes(hashView)) view = hashView;
+const hashView = location.hash.replace("#", ""); if (["standings","tribe","castaways","episodes"].includes(hashView)) view = hashView;
+if (view === "all" || hashView === "all") view = "standings";   // All Tribes was folded into Standings
 render(); load();
 </script>
 </body>
