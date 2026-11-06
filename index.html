@@ -613,7 +613,7 @@ function vStandings(){
   const match = t => !q || (t.leader + " " + t.tribe).toLowerCase().includes(q) || [...t.draft, ...t.after].some(n => n.toLowerCase().includes(q));
   const items = sorted.filter(match).map(t => {
     const r = t.rank <= 3 ? `<span class="medal m${t.rank}">${t.rank}</span>` : `${t.rank}`;
-    const roster = rosterAt(t, 99);
+    const roster = [...rosterAt(t, 99)].sort((a, b) => a.localeCompare(b));   // A to Z, players still in before players who are out
     const order = [...roster.filter(n => !cOf(n).out), ...roster.filter(n => cOf(n).out)];
     const players = order.map(n => {
       const c = cOf(n), isAdded = merged && t.after.length && !t.draft.includes(n), hit = q && n.toLowerCase().includes(q);
