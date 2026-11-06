@@ -684,9 +684,8 @@ function vTribe(){
       <div><b>${t.bonus}</b><span>Bonus pts</span></div>
     </div>
   </div>
-  <h2>${gone.length ? `Still in the game · ${live.length}` : swapped ? "Tribe after the merge" : "Tribe"}</h2>
-  ${live.length ? `<div class="card"><ul class="players">${live.map(n => playerRow(n, kindOf(n))).join("")}</ul></div>` : `<div class="card state" style="padding:20px">Nobody left. Rough season.</div>`}
-  ${gone.length ? `<h2>Torch snuffed · ${gone.length}</h2><p class="muted" style="font-size:13px;margin:-2px 2px 8px">Gone, but their points still count.</p><div class="card"><ul class="players">${gone.map(n => playerRow(n, kindOf(n))).join("")}</ul></div>` : ""}
+  <h2>${swapped ? "Tribe after the merge" : "Tribe"}</h2>
+  <div class="card"><ul class="players">${[...live, ...gone].map(n => playerRow(n, kindOf(n))).join("")}</ul></div>
   ${dropped.length ? `<h2>Dropped at the merge</h2><p class="muted" style="font-size:13px;margin:-2px 2px 8px">No regrets? Here\u2019s what they\u2019ve done since.</p><div class="card"><ul class="players">${dropped.map(n => playerRow(n, "dropped")).join("")}</ul></div>` : ""}
   <h2>Place by episode</h2>
   <div class="card">${rankChart(t)}</div>
