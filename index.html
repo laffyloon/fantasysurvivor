@@ -48,19 +48,19 @@ h1{font:800 26px/1.05 "Roboto Condensed",Roboto,sans-serif;letter-spacing:.3px;m
 .pot .p3{background:linear-gradient(160deg,#dca47a,#b87333)}
 .pot b{display:block;font:700 17px "Roboto Condensed",Roboto,sans-serif}
 nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
-nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
-nav.tabs button{background:none;border:0;padding:13px 9px 11px;font:700 13px "Roboto Condensed",Roboto,sans-serif;letter-spacing:.4px;text-transform:uppercase;color:var(--ink-3);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav.tabs .wrap{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+nav.tabs button{background:none;border:0;padding:13px 6px 11px;font:700 13px "Roboto Condensed",Roboto,sans-serif;letter-spacing:.2px;text-transform:uppercase;color:var(--ink-3);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
 nav.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--lime)}
+@media (max-width:400px){nav.tabs .wrap{padding:0 8px;justify-content:space-between}nav.tabs button{font-size:12px;padding:13px 3px 11px;letter-spacing:0}}
 main{padding:16px 0 48px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
 .muted{color:var(--ink-3)}
 .row{display:flex;align-items:center;gap:12px}
-.spacer{flex:1}
 .search{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);margin-bottom:12px;outline:none}
 .search:focus{border-color:var(--lime)}
 /* standings */
 .st-list{list-style:none;margin:0;padding:0}
-.st-item{position:relative;display:flex;align-items:center;gap:12px;padding:11px 14px 11px 20px;border-top:1px solid var(--line);cursor:pointer;background:var(--surface);background:color-mix(in srgb,var(--tc,transparent) 13%,var(--surface))}
+.st-item{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:0 12px;padding:11px 14px 11px 20px;border-top:1px solid var(--line);cursor:pointer;background:var(--surface);background:color-mix(in srgb,var(--tc,transparent) 13%,var(--surface))}
 .st-item .swatch{position:absolute;left:0;top:0;bottom:0;width:7px;background:var(--tc);box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
 .st-list .st-item:first-child .swatch{border-top-left-radius:var(--radius)}
 .st-list .st-item:last-child .swatch{border-bottom-left-radius:var(--radius)}
@@ -75,12 +75,12 @@ main{padding:16px 0 48px}
 .rankchart text{font:500 10px Roboto,sans-serif;fill:var(--ink-3)}
 .rankchart .lbl{font:600 10px "Roboto Condensed",Roboto,sans-serif;fill:var(--ink-2)}
 .since{margin-top:8px;font-size:13px;font-weight:700;color:var(--orange-ink)}
-.player.dropped .top,.player.dropped .cats{opacity:.6}
+.player.dropped .top,.player.dropped .ptags{opacity:.6}
 .st-item:first-child{border-top:0}
 /* voted out */
 .out-name{text-decoration:line-through;text-decoration-color:rgba(215,38,30,.85);text-decoration-thickness:1px}
 .player.out .avatar{filter:grayscale(1);opacity:.45}
-.player.out .who b,.player.out .who span,.player.out .pts,.player.out .cats .cat{opacity:.55}
+.player.out .who b,.player.out .who span,.player.out .pts,.player.out .ptags{opacity:.55}
 .player.out .who b{opacity:.7}
 .pill.snuffed{background:#2b2622;border-color:#2b2622;color:#ffb07a}
 @media (prefers-color-scheme: dark){.pill.snuffed{background:#45291f;border-color:#6b3a28}}
@@ -112,9 +112,6 @@ main{padding:16px 0 48px}
 .big{font:800 46px/1 "Roboto Condensed",Roboto,sans-serif}
 .pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
 .pill.tiny{font-size:10px;padding:1px 6px;vertical-align:1px}
-.pill.lime{background:var(--lime);border-color:var(--lime);color:#243000}
-.pill.orange{background:#fff1db;border-color:#ffd9a0;color:#8a4b00}
-@media (prefers-color-scheme: dark){.pill.orange{background:#3d2a0d;border-color:#6b4a16;color:#ffb84d}}
 .breakdown{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
 .breakdown div{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 6px;text-align:center}
 .breakdown b{display:block;font:800 20px "Roboto Condensed",Roboto,sans-serif}
@@ -132,7 +129,6 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .cat{font-size:11px;padding:2px 7px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
 .cat.neg{color:var(--neg)}
 .cat b{font-weight:700;color:var(--pos)}.cat.neg b{color:var(--neg)}.cat small{font-size:10px;color:var(--ink-3)}
-.star{color:var(--orange);font-size:14px}
 /* bars */
 .bars{display:flex;align-items:flex-end;gap:6px;height:140px;padding:14px 14px 0}
 .bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
@@ -190,15 +186,99 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .stat li:first-child{border-top:0}
 .stat li span{grid-column:1;font-size:12px;color:var(--ink-3)}
 .stat li em{grid-row:1/3;grid-column:2;font:800 20px "Roboto Condensed",Roboto,sans-serif;font-style:normal}
-.stat .catlead li{grid-template-columns:1fr auto;gap:0 10px}
-.stat .catlead li span{font-size:13px;color:var(--ink-2)}
-.stat .catlead li b{grid-column:1;font-size:13px}
-.stat .catlead li em{font-size:16px;color:var(--ink-3)}
+/* the jury: one widget per seat, same build as the season cards, in deep "whale" blue */
+.jcard{--pc:#2f6690}
+@media (prefers-color-scheme: dark){.jcard{--pc:#6fa3cf}}
+.jcard{margin-top:4px}
+.jlist{list-style:none;margin:6px 0 0;padding:0}
+.jlist li{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid var(--line)}
+.jlist li:first-child{border-top:0}
+.jlist b{font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jlist span{font-size:12px;color:var(--ink-3);white-space:nowrap}
+.h2sub{font:600 12px Roboto,sans-serif;letter-spacing:.3px;color:var(--ink-3);margin-left:6px;text-transform:none}
+.pillars{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (min-width:640px){.pillars{grid-template-columns:repeat(4,1fr)}}
+.pillar{padding:10px 12px 10px;border-top:4px solid var(--pc);min-width:0}
+.pillar h3{margin:0;font:800 12px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-2)}
+.pillar p{margin:6px 0 0;font-size:12px}
+.rk-lead{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;column-gap:8px;margin-top:6px}
+.rk-lead b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk-lead > span{grid-column:1;font-size:12px;color:var(--ink-3)}
+.rk-lead b.tie2,.rk-lead b.tie4{white-space:normal;line-height:1.3;overflow:visible;text-overflow:clip}
+.rk-lead b.tie2{font-size:14px}
+.rk-lead b.tie4{font-size:13px}
+.rk-lead b span{white-space:nowrap}
+.rk-lead .sep{font-style:normal;color:var(--ink-3);font-weight:400;margin:0 1px}
+.rk-lead b.out-name,.rk-lead b span.out-name{color:var(--ink-3)}
+.rk-lead em{grid-row:1/3;grid-column:2;font:800 22px "Roboto Condensed",Roboto,sans-serif;font-style:normal}
+.rk-rest{list-style:none;margin:8px 0 0;padding:6px 0 0;border-top:1px solid var(--line);display:grid;gap:3px}
+.rk-rest li{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:6px;align-items:baseline;font-size:12px;color:var(--ink-3)}
+.rk-rest i{font-style:normal;font-size:11px;font-variant-numeric:tabular-nums;opacity:.8}
+.rk-rest span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk-rest em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums}
+.rk-more{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;margin-top:8px;padding:6px 0 0;border:0;border-top:1px dashed var(--line);background:none;font:700 12px Roboto,sans-serif;color:var(--ink-2);cursor:pointer}
+.rk-more:hover{color:var(--ink)}
+.rk-more:focus-visible{outline:2px solid var(--lime);outline-offset:2px;border-radius:4px}
+/* an opened card takes the full width so the whole list stays readable on a phone */
+.pillars{align-items:start}
+.pillars .pillar.open,.stats .stat.open{grid-column:1/-1}
+.open .rk-rest{display:block;columns:2;column-gap:20px}
+.open .rk-rest li{break-inside:avoid;margin-bottom:3px}
+/* inside .stat cards the older ".stat li" grid would win; reset it for the ranked lists */
+.stat .rk-rest li{grid-template-columns:16px minmax(0,1fr) auto;padding:0;border-top:0}
+.stat .rk-rest li span{grid-column:auto;font-size:12px;color:var(--ink-3)}
+.stat .rk-rest li em{grid-row:auto;grid-column:auto;font:700 12px Roboto,sans-serif;font-variant-numeric:tabular-nums}
+.stat li em small{font:500 11px Roboto,sans-serif;color:var(--ink-3);margin-left:1px}
+@media (min-width:640px){.pair.half{grid-column:auto}}
 .foot{font-size:12px;color:var(--ink-3);text-align:center;margin-top:28px}
 .foot button{background:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;color:var(--ink-2);margin-left:6px}
+/* old players: out rows go compact, dropped rows stay faded */
+.card:has(> .players){overflow:hidden}
+.player.out{padding:8px 14px;background:var(--surface-2)}
+.player.out .avatar{width:28px;height:28px;font-size:11px}
+.player.out .pts{font-size:16px}
+.who span.outtag{color:var(--ink-2);font-weight:500}
+.ctable tr.divider td{background:var(--surface-2);font:700 11px Roboto,sans-serif;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-3);padding:8px 12px}
+/* category race */
+.race{list-style:none;margin:0;padding:2px 0}
+.race-row{display:grid;grid-template-columns:minmax(70px,104px) 1fr 46px;align-items:center;gap:4px 10px;padding:7px 14px;border-top:1px solid var(--line);cursor:pointer}
+.race-row:first-child{border-top:0}
+.race-row:hover{background:var(--surface-2)}
+.race-row .nm{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.race-row.out .nm{color:var(--ink-3)}
+.race-bar{display:flex;gap:2px;height:16px}
+.race-bar i{flex:1;min-width:0;border-radius:3px;background:var(--line)}
+.race-row.out .race-bar i.on{opacity:.45}
+.race-n{font:800 18px/1 "Roboto Condensed",Roboto,sans-serif;text-align:right}
+.race-n small{font:500 11px Roboto,sans-serif;color:var(--ink-3)}
+.race-detail{grid-column:1/-1;padding:6px 0 4px}
+.race-detail .cats{margin-top:4px}
+.race-detail h4{margin:8px 0 0;font:700 11px Roboto,sans-serif;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-3)}
+.cat.missing{opacity:.6;border-style:dashed}
+.race-lead{grid-column:1/-1;font-size:11px;font-weight:700;color:var(--orange-ink);margin-top:-2px}
+/* standings roster line (folded in from the old All Tribes tab) */
+.st-roster{flex-basis:100%;display:flex;flex-wrap:wrap;gap:2px 12px;padding:5px 26px 0 52px;font-size:12.5px;line-height:1.35;color:var(--ink-2)}
+.rp{white-space:nowrap}
+.rp b{font:700 12px "Roboto Condensed",Roboto,sans-serif;color:var(--ink-3)}
+.rp.out{color:var(--ink-3)}
+.rp.out span{text-decoration:line-through;text-decoration-color:rgba(215,38,30,.85)}
+.rp.out b{opacity:.7}
+.st-item{--tn:var(--tn-l)}
+.st-item .who b{color:var(--tn,var(--ink))}
+@media (prefers-color-scheme: dark){.st-item{--tn:var(--tn-d)}}
+.ss{font-style:normal;font-size:11px;color:color-mix(in srgb,var(--orange) 28%,var(--ink-3));margin-right:2px;vertical-align:1px}
+.rp.added span,.addn{box-shadow:inset 0 -1.5px 0 color-mix(in srgb,var(--lime) 35%,var(--ink-3))}
+.addn{text-decoration:none}
+.ln{font-size:.8em;font-weight:400;color:var(--ink-3);margin-left:1px}
+/* My Tribe player notes: same quiet treatment as Standings */
+.ptags{display:flex;flex-wrap:wrap;gap:3px 14px;margin-top:5px;padding-left:46px;font-size:12px;color:var(--ink-3)}
+.player.out .ptags{padding-left:38px}
+.rp.hit span{background:color-mix(in srgb,var(--orange) 30%,transparent);border-radius:3px;padding:0 2px}
+@media (max-width:420px){.st-roster{padding-left:52px;padding-right:4px}}
+.keyline{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink-3);margin:0 2px 12px}
 .grid2{display:grid;gap:12px}
 @media (min-width:700px){.grid2{grid-template-columns:1fr 1fr}.big{font-size:54px}}
-@media (max-width:420px){.breakdown{grid-template-columns:repeat(2,1fr)}.ctable .hide-sm{display:none}}
+@media (max-width:420px){.breakdown{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -222,7 +302,7 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 <nav class="tabs" aria-label="Sections">
   <div class="wrap" role="tablist">
     <button role="tab" data-view="standings" aria-selected="true">Standings</button>
-    <button role="tab" data-view="tribe" aria-selected="false">Tribes</button>
+    <button role="tab" data-view="tribe" aria-selected="false">My Tribe</button>
     <button role="tab" data-view="castaways" aria-selected="false">Castaways</button>
     <button role="tab" data-view="episodes" aria-selected="false">Episodes</button>
   </div>
@@ -337,12 +417,15 @@ function model(st, lg, tb, cp){
   const liveEps = logEps.filter(([e, j]) => isLive(j));
   const events = [];
   const pointsFor = {};
+  const sectionOf = {};   // category -> the section header above it (Outwit, Outplay, ...)
+  let section = "";
   for (let i = 1; i < lg.length; i++){
     const r = lg[i]; const label = (r[0] || "").trim();
     if (!label || /^(spell check|live on site)/i.test(label)) continue;
     const pts = r[1];
-    if (pts === undefined || pts === "") continue; // section header
+    if (pts === undefined || pts === ""){ section = label; continue; } // section header
     pointsFor[label] = num(pts);
+    sectionOf[label] = section;
     liveEps.forEach(([e, j]) => {
       const names = (r[j] || "").split(",").map(s => s.trim()).filter(Boolean);
       if (names.length) events.push({ ep: e, label, pts: num(pts), names });
@@ -399,7 +482,7 @@ function model(st, lg, tb, cp){
   eps.forEach((e, k) => tribes.forEach(t => { t.hist[k].rank = 1 + tribes.filter(o => o.hist[k].total > t.hist[k].total).length; }));
   tribes.forEach(t => { const h = t.hist; t.move = latest > 2 && h.length > 1 ? h[h.length - 2].rank - h[h.length - 1].rank : 0; });
 
-  return { settings, merge, castaways, byName, events, latest, tribes, pointsFor, catHits,
+  return { settings, merge, castaways, byName, events, latest, tribes, pointsFor, catHits, sectionOf,
     pot: { total: settings["Total collected"],
       p1: settings["Announced: 1st"] || settings["First place (70%, calculated)"] || settings["First place (70%)"],
       p2: settings["Announced: 2nd"] || settings["Second place (20%, calculated)"] || settings["Second place (20%)"],
@@ -407,8 +490,9 @@ function model(st, lg, tb, cp){
     winner: settings["Winner"] || "" };
 }
 
-// which five count for an episode: after-merge roster (if filled in) from the first post-merge episode on
-function rosterAt(t, ep, merge = D.merge){ return (ep >= merge && t.after.length) ? t.after : t.draft; }
+// which five count for an episode: after-merge roster (if filled in) from the first post-merge episode on.
+// rosterAt(t, 99) is "who they have now". Rosters typed in before the merge number is set don't count yet.
+function rosterAt(t, ep, merge = D.merge){ return (merge < 99 && ep >= merge && t.after.length) ? t.after : t.draft; }
 function tribeEpisodePoints(t){
   const out = [];
   for (let e = 2; e <= Math.max(D.latest, 2); e++){
@@ -425,6 +509,24 @@ function firstName(full){
   return clash && parts[1] ? `${first} ${parts[1][0]}.` : first;
 }
 const inkOn = hex => { const h = hex.replace("#",""); const [r,g,b] = [0,2,4].map(i => parseInt(h.substr(i,2),16)/255).map(v => v <= .03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4)); return (0.2126*r + 0.7152*g + 0.0722*b) > 0.32 ? "#1d1d1b" : "#ffffff"; };
+// tribe color nudged darker (light mode) or lighter (dark mode) until it reads clearly on its own row tint
+const _rgb = hex => [0,2,4].map(i => parseInt(hex.replace("#","").substr(i,2),16));
+const _lum = ([r,g,b]) => { const f = v => { v /= 255; return v <= .03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4); }; return .2126*f(r) + .7152*f(g) + .0722*f(b); };
+const _cr = (a, b) => { const [x, y] = [_lum(a), _lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
+function nameInk(hex, dark){
+  const tc = _rgb(hex), surf = dark ? [37,36,31] : [255,255,255];
+  const bg = surf.map((v, i) => Math.round(v * .87 + tc[i] * .13));   // matches the row's 13% tint
+  let [r, g, b] = tc.map(v => v / 255); const mx = Math.max(r,g,b), mn = Math.min(r,g,b); let h = 0, s = 0, l = (mx + mn) / 2;
+  if (mx !== mn){ const d = mx - mn; s = l > .5 ? d / (2 - mx - mn) : d / (mx + mn);
+    h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h /= 6; }
+  s = Math.min(s, .72);   // keep it easy on the eye
+  const rgbOf = L => { if (!s) return [L,L,L].map(v => Math.round(v*255)); const q = L < .5 ? L*(1+s) : L+s-L*s, p = 2*L-q;
+    const k = t => { t = (t+1) % 1; return t < 1/6 ? p+(q-p)*6*t : t < .5 ? q : t < 2/3 ? p+(q-p)*(2/3-t)*6 : p; };
+    return [k(h+1/3), k(h), k(h-1/3)].map(v => Math.round(v*255)); };
+  let c = rgbOf(l);
+  for (let i = 0; i < 60 && _cr(c, bg) < 4.6; i++){ l = dark ? Math.min(1, l + .015) : Math.max(0, l - .015); c = rgbOf(l); }
+  return "#" + c.map(v => v.toString(16).padStart(2, "0")).join("");
+}
 const lineColor = hex => inkOn(hex) === "#ffffff" ? hex : "var(--slate-dark)";
 const moveTag = t => t.move > 0 ? `<small class="mv up" title="Up ${t.move} since last episode">▲${t.move}</small>` : t.move < 0 ? `<small class="mv down" title="Down ${-t.move} since last episode">▼${-t.move}</small>` : "";
 function rankChart(t){
@@ -456,24 +558,77 @@ const NOTES = [
 ];
 const noteFor = label => (NOTES.find(([re]) => re.test(label)) || [])[1] || "";
 const isNeg = label => (D.pointsFor[label] ?? 0) < 0;
+const cOf = n => D.byName[n.toLowerCase()] || { name: n, full:"", eps:{}, pre:0, post:0, bonus:0, season:0, categories:[], out:0 };
+// jury: anyone ticked MADE MERGE on the sheet who has since gone out, numbered in the order they left
+// "Kristin" + a quieter "Flickinger": last word of the sheet's FULL NAME, when it adds something
+const lastName = c => { const w = String(c.full || "").replace(/[“”"]/g, "").trim().split(/\s+/); const l = w.length > 1 ? w[w.length - 1] : ""; return l && l.toLowerCase() !== c.name.toLowerCase() ? l : ""; };
+const onTxt = k => k ? `on ${k} tribe${k === 1 ? "" : "s"}` : "on no tribes";
+const isJuror = c => !!(c && c.made && c.out);
+const jurors = () => D.castaways.filter(isJuror).sort((a, b) => a.out - b.out || a.name.localeCompare(b.name));
+const jurySeat = c => isJuror(c) ? 1 + D.castaways.filter(o => isJuror(o) && o.out < c.out).length : 0;
+const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th","st","nd","rd"][n % 10] || "th");
+// what a castaway has scored for one tribe (dropped players only count up to the merge, added ones only after).
+// Bonuses are included so a tribe's players add up to its total: the made-merge bonus stays with the tribe that
+// had the player through the merge episode (the draft five); later bonuses (FTC, winner, most categories) go to
+// whoever holds the player after the merge.
+const mergeBonus = c => c.made ? Math.min(c.bonus, num(D.settings["Bonus: makes merge"]) || 5) : 0;
+const lateBonus = c => c.bonus - mergeBonus(c);
+function ptsFor(t, n){
+  const c = cOf(n), merged = D.merge < 99, swapped = merged && t.after.length;
+  if (!merged) return { pts: c.pre + c.bonus, note: "this season" };
+  if (swapped && !t.draft.includes(n)) return { pts: c.post + lateBonus(c), note: `from Ep ${D.merge}` };
+  if (swapped && !t.after.includes(n)) return { pts: c.pre + mergeBonus(c), note: `through Ep ${D.merge - 1}` };
+  return { pts: c.pre + c.post + c.bonus, note: "for this tribe" };
+}
+// category race: one segment per point-scoring category, colored by its section on the Episode Log
+const PILLARS = [[/outwit/i, "Outwit", "#3d8fd1"], [/outplay/i, "Outplay", "#ff9900"], [/outlast/i, "Outlast", "#86b800"], [/trick/i, "Bag of Tricks", "#a46fd6"]];
+const pillarOf = label => { const k = PILLARS.findIndex(([re]) => re.test(D.sectionOf[label] || "")); return k < 0 ? PILLARS.length : k; };
+const pillarColor = label => (PILLARS[pillarOf(label)] || [0, 0, "var(--slate)"])[2];
+function raceCats(){
+  // rules: "earns points from the most distinct point categories". Penalties don't earn points; one-time bonuses aren't categories.
+  // Torch lit does earn points, so it counts (matches the sheet's CATS HIT).
+  return Object.keys(D.pointsFor)
+    .filter(l => D.pointsFor[l] > 0 && !/one.?time|bonus/i.test(D.sectionOf[l] || ""))
+    .map((l, i) => [l, i]).sort((a, b) => pillarOf(a[0]) - pillarOf(b[0]) || a[1] - b[1]).map(x => x[0]);
+}
+// match category names loosely (case, spaces, punctuation) so a small label difference between sheet blocks can't zero a bar
+const catKey = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+const hitsOf = (c, label) => {
+  const key = catKey(label);
+  if (c.hits){ for (const h in c.hits) if (catKey(h) === key && c.hits[h]) return c.hits[h]; }
+  return c.categories.some(x => catKey(x) === key) ? 1 : 0;
+};
 
 /* ---------------- views ---------------- */
+// standings: one row per tribe with its current players and their points on a quiet second line
 function vStandings(){
-  const q = (store.get("s51.q") || "");
+  const raw = (store.get("s51.q") || ""), q = raw.trim().toLowerCase();
+  const merged = D.merge < 99;
   const sorted = [...D.tribes].sort((a,b) => b.total - a.total || a.leader.localeCompare(b.leader));
-  const items = sorted.filter(t => !q || (t.leader + " " + t.tribe).toLowerCase().includes(q.toLowerCase())).map(t => {
+  // legend items only appear once there's something on screen for them to explain
+  const hasSS = D.tribes.some(t => t.ss && rosterAt(t, 99).includes(t.ss));
+  const hasAdded = merged && D.tribes.some(t => t.after.length && t.after.some(n => !t.draft.includes(n)));
+  const match = t => !q || (t.leader + " " + t.tribe).toLowerCase().includes(q) || [...t.draft, ...t.after].some(n => n.toLowerCase().includes(q));
+  const items = sorted.filter(match).map(t => {
     const r = t.rank <= 3 ? `<span class="medal m${t.rank}">${t.rank}</span>` : `${t.rank}`;
-    return `<li class="st-item" data-leader="${esc(t.leader)}" style="--tc:${t.color}">
+    const roster = [...rosterAt(t, 99)].sort((a, b) => a.localeCompare(b));   // A to Z, players still in before players who are out
+    const order = [...roster.filter(n => !cOf(n).out), ...roster.filter(n => cOf(n).out)];
+    const players = order.map(n => {
+      const c = cOf(n), isAdded = merged && t.after.length && !t.draft.includes(n), hit = q && n.toLowerCase().includes(q);
+      return `<span class="rp ${c.out ? "out" : ""} ${isAdded ? "added" : ""} ${hit ? "hit" : ""}" title="${esc(c.full || n)}${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}${isJuror(c) ? ` · ${ordinal(jurySeat(c))} juror` : ""}` : ""}${isAdded ? " · added at merge" : ""}${t.ss === n ? " · Sole Survivor pick" : ""}">${t.ss === n ? '<i class="ss" aria-label="Sole Survivor pick">★</i>' : ""}<span>${esc(n)}</span> <b>${ptsFor(t, n).pts}</b></span>`;
+    }).join("");
+    return `<li class="st-item" data-leader="${esc(t.leader)}" style="--tc:${t.color};--tn-l:${nameInk(t.color, false)};--tn-d:${nameInk(t.color, true)}">
       <span class="swatch"></span>
       <div class="rank">${r}${t.tied ? "<small>TIED</small>" : ""}</div>
       <div class="who"><b>${esc(t.tribe)}</b><span>${esc(firstName(t.leader))}${t.left < t.size ? ` · <span class="left">${t.left} of ${t.size} left</span>` : ""}</span></div>
       <div class="score">${t.total}${moveTag(t)}</div>
       <svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      <div class="st-roster">${players}</div>
     </li>`;
   }).join("");
-  return `<button class="findmine" data-go="tribe"><span>See your tribe</span><small>Your players, points and categories</small><b>›</b></button>
-    <p class="muted" style="font-size:13px;margin:0 2px 10px">Or tap any tribe below to see its details.</p>
-    <input class="search" id="q" placeholder="Find a tribe or leader" value="${esc(q)}" aria-label="Search tribes">
+  return `<button class="findmine" data-go="tribe"><span>See your tribe</span><small>Your players, points and history</small><b>›</b></button>
+    <input class="search" id="q" placeholder="Find a tribe, leader or castaway" value="${esc(raw)}" aria-label="Search tribes and castaways">
+    ${hasSS || hasAdded ? `<div class="keyline">${hasSS ? '<span><i class="ss">★</i> Sole Survivor pick</span>' : ""}${hasAdded ? '<span class="rp added"><span>Added at merge</span></span>' : ""}</div>` : ""}
     <div class="card"><ul class="st-list">${items || '<li class="state">No matches</li>'}</ul></div>`;
 }
 
@@ -488,36 +643,32 @@ function vTribe(){
   const dropped = swapped ? t.draft.filter(n => !t.after.includes(n)) : [];
   const added = swapped ? t.after.filter(n => !t.draft.includes(n)) : [];
 
+  // category breakdowns moved to the Castaways tab (category race); rows here just show who, status and points
+  const outText = c => !c.out ? "" : isJuror(c) ? `🐋 ${ordinal(jurySeat(c))} juror · ${c.quit ? "quit" : "out"} Ep ${c.out}` : c.quit ? `🤡 Quit · Ep ${c.out}` : `🔥 Out · Ep ${c.out}`;
   const playerRow = (n, kind) => {
-    const c = D.byName[n.toLowerCase()] || { full:"", eps:{}, pre:0, post:0, bonus:0, categories:[] };
-    let pts, note;
-    if (kind === "dropped"){ pts = c.pre; note = `through Ep ${D.merge - 1}`; }
-    else if (!merged){ pts = c.pre; note = "this season"; }
-    else if (added.includes(n)){ pts = c.post + c.bonus; note = `from Ep ${D.merge}`; }
-    else { pts = c.pre + c.post + c.bonus; note = "for this tribe"; }
+    const c = cOf(n);
+    const { pts, note } = kind === "dropped" ? { pts: ptsFor(t, n).pts, note: "for you" } : ptsFor(t, n);
     const ss = t.ss && t.ss === n;
     const tags = [
-      c.out ? `<span class="pill snuffed">${c.quit ? "🤡 Quit" : "🔥 Torch snuffed"} · Ep ${c.out}</span>` : "",
-      ss ? '<span class="pill orange">★ Sole Survivor</span>' : "",
-      kind === "added" ? '<span class="pill lime">Added at merge</span>' : "",
-      kind === "dropped" ? '<span class="pill">Dropped at merge</span>' : "",
-      c.made ? '<span class="pill">Made merge</span>' : "",
-      D.winner && D.winner === n ? '<span class="pill orange">Sole Survivor winner</span>' : ""
-    ].join(" ");
-    const cats = c.categories.map(x => {
-      const k = c.hits?.[x] || 1, p = (D.pointsFor[x] ?? 0) * k;
-      return `<span class="cat ${isNeg(x) ? "neg" : ""}">${esc(x)} <b>${signed(p)}</b>${k > 1 ? ` <small>(×${k})</small>` : ""}</span>`;
-    }).join("");
-    return `<li class="player ${kind === "dropped" ? "dropped" : ""} ${c.out ? "out" : ""}">
+      ss ? `<span><i class="ss">★</i>Sole Survivor${c.out && kind !== "dropped" ? " · no more +1s" : ""}</span>` : "",
+      kind === "added" ? '<span><u class="addn">Added at merge</u></span>' : "",
+      D.winner && D.winner === n ? '<span>🏆 Won the season</span>' : ""
+    ].filter(Boolean).join(" ");
+    const sub = kind === "dropped"
+      ? `<span class="outtag">Dropped at merge${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}${isJuror(c) ? ` · ${ordinal(jurySeat(c))} juror` : ""}` : ""}</span>`
+      : c.out ? `<span class="outtag">${outText(c)}</span>` : "";
+    return `<li class="player ${kind === "dropped" ? "dropped" : ""} ${c.out && kind !== "dropped" ? "out" : ""}">
       <div class="top">${avatar(n)}
-        <div class="who"><b class="${c.out ? "out-name" : ""}">${esc(n)}</b><span>${esc(c.full)}</span></div>
+        <div class="who"><b class="${c.out ? "out-name" : ""}">${kind === "added" ? `<u class="addn">${esc(n)}</u>` : esc(n)}${lastName(c) ? ` <small class="ln">${esc(lastName(c))}</small>` : ""}</b>${sub}</div>
         <div class="pts">${pts}<small>${note}</small></div>
       </div>
-      ${tags.trim() ? `<div class="cats" style="margin-top:8px">${tags}</div>` : ""}
-      ${cats ? `<div class="cats">${cats}</div>` : ""}
-      ${kind === "dropped" ? `<div class="since">Scored ${signed(c.post + c.bonus)} pts for other tribes since you dropped them</div>` : ""}
+      ${tags ? `<div class="ptags">${tags}</div>` : ""}
+      ${kind === "dropped" && !(c.out && c.out < D.merge) ? `<div class="since">${signed(c.post + lateBonus(c))} pts since you dropped them</div>` : ""}
     </li>`;
   };
+  const live = current.filter(n => !cOf(n).out);
+  const gone = current.filter(n => cOf(n).out).sort((a, b) => cOf(b).out - cOf(a).out);
+  const kindOf = n => added.includes(n) ? "added" : "";
 
   const epPts = tribeEpisodePoints(t);
   const maxAbs = Math.max(1, ...epPts.map(e => Math.abs(e.pts)));
@@ -545,8 +696,8 @@ function vTribe(){
     </div>
   </div>
   <h2>${swapped ? "Tribe after the merge" : "Tribe"}</h2>
-  <div class="card"><ul class="players">${current.map(n => playerRow(n, added.includes(n) ? "added" : "")).join("")}</ul></div>
-  ${dropped.length ? `<h2>Dropped at the merge</h2><p class="muted" style="font-size:13px;margin:-2px 2px 8px">No regrets? Here\u2019s what they\u2019ve done since.</p><div class="card"><ul class="players">${dropped.map(n => playerRow(n, "dropped")).join("")}</ul></div>` : ""}
+  <div class="card"><ul class="players">${[...live, ...gone].map(n => playerRow(n, kindOf(n))).join("")}</ul></div>
+  ${dropped.length ? `<h2>Dropped at the merge</h2><div class="card"><ul class="players">${dropped.map(n => playerRow(n, "dropped")).join("")}</ul></div>` : ""}
   <h2>Place by episode</h2>
   <div class="card">${rankChart(t)}</div>
   <h2>Points by episode</h2>
@@ -558,65 +709,166 @@ function vTribe(){
   <p class="muted" style="font-size:12px;margin-top:10px">Sole Survivor +1 and one-time bonuses (made merge, final tribal, winner, most categories) are included in the totals above.</p>`;
 }
 
-function statsBlock(){
+// Castaways stats: "Right now" moves week to week (last 3 scored episodes), "Season" is the long view
+function statsBlock(afterJury){
   const cs = D.castaways;
-  const picks = n => D.tribes.filter(t => t.draft.includes(n)).length;
   const N = D.tribes.length;
-  const row = (name, val, sub) => `<li><b>${esc(name)}</b><span>${sub}</span><em>${val}</em></li>`;
-  // most picked (draft)
-  const mp = [...cs].sort((a,b) => picks(b.name) - picks(a.name) || a.name.localeCompare(b.name)).slice(0,3);
-  // hidden gem: best scorer drafted by 3 or fewer tribes
-  const gems = cs.filter(c => picks(c.name) <= 3).sort((a,b) => b.season - a.season || picks(a.name) - picks(b.name));
+  const picks = n => D.tribes.filter(t => t.draft.includes(n)).length;
+  const held = n => D.tribes.filter(t => rosterAt(t, 99).includes(n)).length;
+  const row = (name, val, sub, out) => `<li><b class="${out ? "out-name" : ""}">${esc(name)}</b><span>${sub}</span><em>${val}</em></li>`;
+  const merged = D.merge < 99;
+
+  // ---- right now: form over the last three scored episodes ----
+  const scored = [...new Set(D.events.map(e => e.ep))].sort((a,b) => a - b);
+  const win = scored.slice(-3);
+  const span = win.length > 1 ? `Eps ${win[0]}–${win[win.length - 1]}` : win.length ? `Ep ${win[0]}` : "";
+  const recent = c => win.reduce((s, e) => s + (c.eps[e] || 0), 0);
+  const alive = cs.filter(c => !c.out);
+  const hot = [...alive].sort((a,b) => recent(b) - recent(a) || b.season - a.season || a.name.localeCompare(b.name)).slice(0, 3);
+  // cooling off: widely held players doing the least lately (the old "biggest bust", but on recent form)
+  const need = Math.max(2, Math.ceil(N * 0.25));
+  const recents = alive.map(recent).sort((a,b) => a - b);
+  const midRecent = recents.length ? recents[Math.floor((recents.length - 1) / 2)] : 0;
+  const cold = alive.filter(c => held(c.name) >= need && recent(c) <= midRecent)
+    .sort((a,b) => recent(a) - recent(b) || held(b.name) - held(a.name) || a.name.localeCompare(b.name)).slice(0, 3);
+  // current rosters (same as the draft until the merge swaps)
+  const gems = cs.filter(c => held(c.name) <= 3).sort((a,b) => b.season - a.season || held(a.name) - held(b.name));
   const gem = gems[0];
-  // biggest bust: lowest scorer among castaways drafted by 25%+ of tribes
-  const bust = cs.filter(c => picks(c.name) >= N * 0.25).sort((a,b) => a.season - b.season || picks(b.name) - picks(a.name))[0];
-  // most-categories race (+5 bonus at season end)
-  const race = [...cs].sort((a,b) => b.catsHit - a.catsHit || b.season - a.season).slice(0,3);
-  return `<h2 style="margin-top:4px">Season stats</h2>
+  // sleeper: hidden gem on recent form. Most points lately among players still in on 3 or fewer tribes (not the gem)
+  const sleeper = alive.filter(c => held(c.name) <= 3 && c !== gem && recent(c) > 0)
+    .sort((a,b) => recent(b) - recent(a) || held(a.name) - held(b.name) || a.name.localeCompare(b.name))[0];
+
+  // ---- season: net points in each pillar of the Episode Log (Outwit, Outplay, ...) ----
+  const key = n => n.toLowerCase().replace(/[^a-z]/g, "");
+  const byKey = Object.fromEntries(cs.map(c => [key(c.name), c]));
+  const pil = PILLARS.map(() => new Map());
+  D.events.forEach(ev => {
+    const k = pillarOf(ev.label); if (k >= PILLARS.length || /torch lit/i.test(ev.label)) return;   // surviving the week isn't a skill stat
+    ev.names.forEach(n => { const c = byKey[key(n)]; if (c) pil[k].set(c, (pil[k].get(c) || 0) + ev.pts); });
+  });
+  // top 3 (leader big, next two small), with "Full rankings" to open the whole list; ties share a number
+  const rkOpen = new Set((store.get("s51.rkopen") || "").split("|").filter(Boolean));
+  // everyone tied for 1st shares the big spot; within a tie, players still in come before players who are out
+  const rankList = (items, id) => {
+    if (!items.length) return "";
+    items = [...items].sort((a,b) => b.v - a.v || (a.c.out ? 1 : 0) - (b.c.out ? 1 : 0) || a.c.name.localeCompare(b.c.name));
+    const rk = x => 1 + items.filter(o => o.v > x.v).length;
+    const open = rkOpen.has(id);
+    const leads = items.filter(x => x.v === items[0].v), after = items.slice(leads.length);
+    const rest = open ? after : after.slice(0, 2);
+    const sub = [items[0].sub, leads.length > 1 ? `${leads.length}-way tie` : ""].filter(Boolean).join(" · ");
+    const size = leads.length === 1 ? "" : leads.length <= 2 ? "tie2" : "tie4";
+    return `<div class="rk-lead"><b class="${size}">${leads.map(x => `<span class="${x.c.out ? "out-name" : ""}">${esc(x.c.name)}</span>`).join(leads.length > 1 ? ' <i class="sep">·</i> ' : "")}</b>${sub ? `<span>${sub}</span>` : ""}<em>${items[0].v}</em></div>
+      ${rest.length ? `<ol class="rk-rest">${rest.map(x => `<li><i>${rk(x)}</i><span class="${x.c.out ? "out-name" : ""}">${esc(x.c.name)}</span><em>${x.v}</em></li>`).join("")}</ol>` : ""}
+      ${after.length > 2 ? `<button class="rk-more" data-rk="${id}" aria-expanded="${open}">${open ? "Show top 3" : `Full rankings · ${items.length}`}<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="${open ? "M3 7.5l3-3 3 3" : "M3 4.5l3 3 3-3"}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ""}`;
+  };
+  const pillarCard = (k) => {
+    const [, title, color] = PILLARS[k];
+    const ranked = [...pil[k]].filter(([, v]) => v > 0).sort((a,b) => b[1] - a[1] || a[0].name.localeCompare(b[0].name)).map(([c, v]) => ({ c, v }));
+    return `<div class="card pillar ${rkOpen.has(title) ? "open" : ""}" style="--pc:${color}"><h3>${title}</h3>${ranked.length ? rankList(ranked, title) : '<p class="muted">Nobody yet</p>'}</div>`;
+  };
+  const used = [...new Set(Object.keys(D.pointsFor).map(pillarOf))].filter(k => k < PILLARS.length).sort();
+
+  const mp = [...cs].filter(c => picks(c.name) > 0).sort((a,b) => picks(b.name) - picks(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: picks(c.name), sub: `on ${Math.round(picks(c.name) / N * 100)}% of tribes` }));
+  const mh = [...alive].filter(c => held(c.name) > 0).sort((a,b) => held(b.name) - held(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: held(c.name), sub: `on ${Math.round(held(c.name) / N * 100)}% of tribes` }));
+
+  // rock steady: the dependable one. Points every week without the spikes. Only above-median scorers
+  // (a steady +1 for surviving isn't dependable), not the season's top 3 (everyone already knows them),
+  // and nobody already listed under Cooling off.
+  const weekly = c => scored.map(e => c.eps[e] || 0);
+  const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
+  const sd = a => { const m = mean(a); return Math.sqrt(mean(a.map(x => (x - m) ** 2))); };
+  const means = alive.map(c => mean(weekly(c))).sort((a,b) => a - b);
+  const midMean = means.length ? means[Math.floor((means.length - 1) / 2)] : 0;
+  const top3 = new Set([...cs].sort((a,b) => b.season - a.season).slice(0, 3).map(c => c.name));
+  // a "solid week" is at or above the typical weekly score of players still in (median of every player-week)
+  const allWeeks = alive.flatMap(weekly).sort((a,b) => a - b);
+  const solidAt = Math.max(1, allWeeks.length ? allWeeks[Math.floor((allWeeks.length - 1) / 2)] : 1);
+  const solid = c => weekly(c).filter(x => x >= solidAt).length;
+  const steady = scored.length >= 3 ? alive.filter(c => !top3.has(c.name) && !cold.includes(c) && mean(weekly(c)) >= midMean)
+    .sort((a,b) => solid(b) - solid(a) || sd(weekly(a)) - sd(weekly(b)) || mean(weekly(b)) - mean(weekly(a)) || a.name.localeCompare(b.name)).slice(0, 3) : [];
+  const avgTxt = c => (Math.round(mean(weekly(c)) * 10) / 10).toFixed(1);
+
+  return `${span ? `<h2${afterJury ? "" : ' style="margin-top:4px"'}>Right now <small class="h2sub">${span}</small></h2>
+  <p class="muted" style="font-size:13px;margin:-2px 2px 8px">Points over the last ${win.length > 1 ? `${win.length} episodes` : "episode"}, players still in the game.</p>
   <div class="stats">
-    <div class="card stat"><h3>Most picked</h3><ul>${mp.map(c => row(c.name, picks(c.name), `on ${Math.round(picks(c.name) / N * 100)}% of tribes`)).join("")}</ul></div>
-    <div class="card stat"><h3>Most categories</h3><p class="muted">Race for the +5 end-of-season bonus</p><ul>${race.map(c => row(c.name, c.catsHit, `${c.catsHit} of ${Object.keys(D.pointsFor).length} categories`)).join("")}</ul></div>
-    <div class="pair">
-      ${gem ? `<div class="card stat"><h3>💎 Hidden gem</h3><p class="muted">Top scorer on 3 or fewer tribes</p><ul>${row(gem.name, gem.season, picks(gem.name) ? `on ${picks(gem.name)} tribe${picks(gem.name) === 1 ? "" : "s"}` : "nobody picked them")}</ul></div>` : ""}
-      ${bust ? `<div class="card stat"><h3>🪨 Biggest bust</h3><p class="muted">Lowest scorer on 25%+ of tribes</p><ul>${row(bust.name, bust.season, `on ${picks(bust.name)} tribes`)}</ul></div>` : ""}
+    <div class="card stat"><h3>📈 Heating up</h3><p class="muted">Most points lately</p><ul>${hot.map(c => row(c.name, signed(recent(c)), `${onTxt(held(c.name))} · ${c.season} this season`)).join("")}</ul></div>
+    ${cold.length ? `<div class="card stat"><h3>🧊 Cooling off</h3><p class="muted">Fewest points lately, on ${need}+ tribes</p><ul>${cold.map(c => row(c.name, signed(recent(c)), `${onTxt(held(c.name))} · ${c.season} this season`)).join("")}</ul></div>` : ""}
+    ${steady.length ? `<div class="card stat"><h3>🪨 Rock steady</h3><p class="muted">${solidAt}+ points almost every week, no big spikes</p><ul>${steady.map(c => row(c.name, `${avgTxt(c)}<small>/ep</small>`, `${weekly(c).slice(-5).join(" · ")} · ${onTxt(held(c.name))}`)).join("")}</ul></div>` : ""}
+    <div class="pair ${steady.length ? "half" : ""}">
+      ${sleeper ? `<div class="card stat"><h3>🎯 Sleeper</h3><p class="muted">Most points lately on 3 or fewer tribes</p><ul>${row(sleeper.name, signed(recent(sleeper)), held(sleeper.name) ? onTxt(held(sleeper.name)) : "nobody has them")}</ul></div>` : ""}
+      ${gem ? `<div class="card stat"><h3>💎 Hidden gem</h3><p class="muted">Top scorer on 3 or fewer tribes</p><ul>${row(gem.name, gem.season, held(gem.name) ? onTxt(held(gem.name)) : "nobody has them", gem.out)}</ul></div>` : ""}
     </div>
+  </div>` : ""}
+  <h2${span ? "" : ' style="margin-top:4px"'}>Season</h2>
+  ${used.length ? `<p class="muted" style="font-size:13px;margin:-2px 2px 8px">Top 3 in each part of the scoring sheet (torch points left out). Tap Full rankings for everyone.</p><div class="pillars">${used.map(pillarCard).join("")}</div>` : ""}
+  <div class="stats" style="margin-top:10px">
+    <div class="card stat ${merged ? "" : "wide"} ${rkOpen.has("picked") ? "open" : ""}"><h3>Most picked</h3><p class="muted">At the draft</p>${rankList(mp, "picked")}</div>
+    ${merged ? `<div class="card stat ${rkOpen.has("held") ? "open" : ""}"><h3>Most held now</h3><p class="muted">After merge swaps</p>${rankList(mh, "held")}</div>` : ""}
   </div>`;
 }
-function leadersBlock(){
-  const cs = D.castaways;
-  const leaders = (D.catHits || []).map(cat => {
-    const top = Math.max(0, ...cs.map(c => c.hits?.[cat] || 0));
-    const who = top ? cs.filter(c => (c.hits?.[cat] || 0) === top).map(c => c.name) : [];
-    return { cat, top, who, neg: isNeg(cat) };
-  }).filter(x => x.top > 0 && !/torch lit/i.test(x.cat));   // torch-lit goes to everyone still in, so it is left out
-  return leaders.length ? `<h2>Category leaders</h2><div class="card stat"><ul class="catlead" style="margin-top:0">${leaders.map(l =>
-      `<li><span class="${l.neg ? "negv" : ""}">${esc(l.cat)}</span><b>${esc(l.who.join(", "))}</b><em>×${l.top}</em></li>`).join("")}</ul></div>` : "";
+// one bar per castaway: how many different categories they've scored in, out of all of them (+5 bonus at season end)
+function raceBlock(){
+  const cats = raceCats(); if (!cats.length) return "";
+  const N = cats.length;
+  const open = new Set((store.get("s51.raceopen") || "").split("|").filter(Boolean));
+  const rows = D.castaways.map(c => ({ c, got: cats.filter(l => hitsOf(c, l) > 0) }))
+    .sort((a,b) => b.got.length - a.got.length || (a.c.out ? 1 : 0) - (b.c.out ? 1 : 0) || b.c.season - a.c.season || a.c.name.localeCompare(b.c.name));
+  const top = rows.length ? rows[0].got.length : 0;
+  const leaders = rows.filter(r => top && r.got.length === top).length;
+  const chip = (l, c) => { const k = hitsOf(c, l); return `<span class="cat" style="border-left:3px solid ${pillarColor(l)}">${esc(l)} <b>${signed(D.pointsFor[l] * k)}</b>${k > 1 ? ` <small>(×${k})</small>` : ""}</span>`; };
+  const list = rows.map(({ c, got }) => {
+    const isOpen = open.has(c.name);
+    const cells = cats.map((_, i) => i < got.length ? `<i class="on" style="background:${pillarColor(got[i])}" title="${esc(got[i])}"></i>` : "<i></i>").join("");
+    const negs = Object.keys(D.pointsFor).filter(l => D.pointsFor[l] < 0 && hitsOf(c, l) > 0);
+    const missing = cats.filter(l => !got.includes(l));
+    const detail = isOpen ? `<div class="race-detail">
+        ${got.length ? `<div class="cats">${got.map(l => chip(l, c)).join("")}</div>` : '<div class="muted" style="font-size:12px">Nothing yet.</div>'}
+        ${missing.length ? `<h4>Still missing</h4><div class="cats">${missing.map(l => `<span class="cat missing" style="border-left:3px solid ${pillarColor(l)}">${esc(l)}</span>`).join("")}</div>` : ""}
+        ${negs.length ? `<h4>Penalties (don't count here)</h4><div class="cats">${negs.map(l => { const k = hitsOf(c, l); return `<span class="cat neg">${esc(l)} <b>${signed(D.pointsFor[l] * k)}</b>${k > 1 ? ` <small>(×${k})</small>` : ""}</span>`; }).join("")}</div>` : ""}
+      </div>` : "";
+    const lead = top && got.length === top ? `<div class="race-lead">${leaders > 1 ? "Tied for the lead" : "Leading"} · +5 if it holds</div>` : "";
+    return `<li class="race-row ${c.out ? "out" : ""}" data-race="${esc(c.name)}" aria-expanded="${isOpen}">
+      <span class="nm ${c.out ? "out-name" : ""}">${esc(c.name)}</span>
+      <div class="race-bar" role="img" aria-label="${got.length} of ${N} categories">${cells}</div>
+      <span class="race-n">${got.length}<small>/${N}</small></span>${lead}${detail}</li>`;
+  }).join("");
+  const used = [...new Set(cats.map(pillarOf))].sort();
+  const legend = used.map(k => PILLARS[k] ? `<span><i style="background:${PILLARS[k][2]}"></i>${PILLARS[k][1]}</span>` : "").join("");
+  return `<h2>Category race</h2>
+    <p class="muted" style="font-size:13px;margin:-2px 2px 8px">How many different categories each castaway has scored in, out of ${N}. Most at the end of the season gets +5. Tap anyone to see which ones.</p>
+    <div class="card" style="overflow:hidden">${legend ? `<div class="legend" style="padding:12px 14px 4px">${legend}</div>` : ""}<ul class="race">${list}</ul></div>
+    <p class="muted" style="font-size:12px;margin-top:8px">Penalties don't count, since they don't earn points.</p>`;
 }
 
 function vCastaways(){
   const sortKey = store.get("s51.csort") || "season";
   const list = [...D.castaways].sort((a,b) => sortKey === "name" ? a.name.localeCompare(b.name) : (b[sortKey] - a[sortKey]) || a.name.localeCompare(b.name));
-  const holders = n => D.tribes.filter(t => rosterAt(t, Math.max(D.latest, 2)).includes(n)).sort((a,b) => a.leader.localeCompare(b.leader));
+  const holders = n => D.tribes.filter(t => rosterAt(t, 99).includes(n)).sort((a,b) => a.leader.localeCompare(b.leader));
   const onTribes = n => holders(n).length;
   const open = store.get("s51.copen") || "";
-  const rows = list.map(c => {
+  const inGame = list.filter(c => !c.out), outList = list.filter(c => c.out);
+  const rowsFor = arr => arr.map(c => {
     const epsHtml = Object.entries(c.eps).filter(([e]) => +e <= Math.max(D.latest, 2)).map(([e, v]) =>
       `<div><small>Ep ${e}</small><b class="${v > 0 ? "pos" : v < 0 ? "negv" : ""}">${v}</b></div>`).join("");
     return `<tr class="main ${c.out ? "out" : ""}" data-c="${esc(c.name)}">
-        <td style="width:55%"><b class="${c.out ? "out-name" : ""}">${esc(c.name)}</b>${c.made ? ' <span class="pill tiny">Merge</span>' : ""}${c.out ? ` <span class="pill tiny snuffed">${c.quit ? "Quit" : "Out"} Ep ${c.out}</span>` : ""}<div class="muted hide-sm" style="font-size:12px">${esc(c.full)}</div></td>
+        <td style="width:55%"><b class="${c.out ? "out-name" : ""}">${esc(c.name)}</b>${c.made ? ' <span class="pill tiny">Merge</span>' : ""}${c.out ? ` <span class="pill tiny snuffed">${isJuror(c) ? `${ordinal(jurySeat(c))} juror · ` : ""}${c.quit ? "Quit" : "Out"} Ep ${c.out}</span>` : ""}</td>
         <td class="num"><b>${c.season}</b></td>
         <td class="num">${onTribes(c.name)}</td>
       </tr>
       ${open === c.name ? `<tr class="detail"><td colspan="3"><div class="muted" style="font-size:11px;margin-top:6px">Points by episode</div><div class="eps">${epsHtml}</div>
-        <div class="muted" style="font-size:11px;margin-top:12px">On ${onTribes(c.name)} tribe${onTribes(c.name) === 1 ? "" : "s"}</div>
-        ${holders(c.name).length ? `<ul class="holders">${holders(c.name).map(t => `<li data-leader="${esc(t.leader)}"><i style="background:${t.color}"></i><b>${esc(t.tribe)}</b><span>${esc(firstName(t.leader))}</span></li>`).join("")}</ul>` : '<div class="muted" style="font-size:12px;margin-top:4px">Nobody picked them</div>'}</td></tr>` : ""}`;
+        <div class="muted" style="font-size:11px;margin-top:12px">${onTxt(onTribes(c.name)).replace(/^o/, "O")}</div>
+        ${holders(c.name).length ? `<ul class="holders">${holders(c.name).map(t => `<li data-leader="${esc(t.leader)}"><i style="background:${t.color}"></i><b>${esc(t.tribe)}</b><span>${esc(firstName(t.leader))}</span></li>`).join("")}</ul>` : '<div class="muted" style="font-size:12px;margin-top:4px">Nobody has them</div>'}</td></tr>` : ""}`;
   }).join("");
+  const rows = rowsFor(inGame) + (outList.length ? `<tr class="divider"><td colspan="3">Out of the game · ${outList.length}</td></tr>` + rowsFor(outList) : "");
   const th = (k, label, cls="") => `<th class="${cls}" data-sort="${k}">${label}${sortKey === k ? " ▾" : ""}</th>`;
-  return `${statsBlock()}<h2>All castaways</h2><div class="card" style="overflow:hidden"><table class="ctable">
+  const jury = jurors();
+  const juryHtml = jury.length ? `<div class="card pillar jcard"><h3>🐋 The Jury · ${jury.length}</h3><ul class="jlist">${jury.map(c =>
+    `<li><b>${esc(c.name)}</b><span>${onTxt(onTribes(c.name))}</span></li>`).join("")}</ul></div>` : "";
+  return `${juryHtml}${statsBlock(!!jury.length)}${raceBlock()}<h2>All castaways</h2><div class="card" style="overflow:hidden"><table class="ctable">
     <thead><tr>${th("name","Castaway")}${th("season","Points","num")}<th class="num">On tribes</th></tr></thead>
     <tbody>${rows}</tbody></table></div>
-    <p class="muted" style="font-size:12px;margin-top:10px">Tap a castaway to see their points by episode.</p>
-    ${leadersBlock()}`;
+    <p class="muted" style="font-size:12px;margin-top:10px">Tap a castaway to see their points by episode.</p>`;
 }
 
 function vEpisodes(){
@@ -628,7 +880,7 @@ function vEpisodes(){
   const outLine = (list, icon, title) => list.length ? `<div class="ev"><div class="head"><span class="val">${icon}</span><b>${title}</b></div>
       <div class="names">${list.map(c => `<span class="out-name">${esc(c.name)}</span>`).join("")}</div></div>` : "";
   const gone = D.castaways.filter(c => c.out === ep);
-  const outEv = outLine(gone.filter(c => !c.quit), "🔥", "Torch snuffed") + outLine(gone.filter(c => c.quit), "🤡", "Quit");
+  const outEv = outLine(gone.filter(c => !c.quit && !isJuror(c)), "🔥", "Torch snuffed") + outLine(gone.filter(c => !c.quit && isJuror(c)), "🐋", `Torch snuffed · joins the jury`) + outLine(gone.filter(c => c.quit), "🤡", "Quit");
   const evs = outEv + D.events.filter(e => e.ep === ep).map(e => `<div class="ev">
       <div class="head"><span class="val ${e.pts < 0 ? "negv" : "pos"}">${signed(e.pts)}</span><b>${esc(e.label)}${noteFor(e.label) ? ` <small class="note">${esc(noteFor(e.label))}</small>` : ""}</b></div>
       <div class="names">${tally(e.names).map(([n, k]) => `<span>${esc(n)}${k > 1 ? ` <b>×${k}</b>` : ""}</span>`).join("")}</div></div>`).join("");
@@ -678,31 +930,35 @@ async function load(){
 }
 
 /* ---------------- events ---------------- */
+const VIEWS = ["standings", "tribe", "castaways", "episodes"];
+const go = v => { view = v; store.set("s51.view", v); render(); window.scrollTo({ top: 0 }); };
+const openTribe = leader => { store.set("s51.tribe", leader); go("tribe"); };
+const toggleIn = (k, v) => { const set = new Set((store.get(k) || "").split("|").filter(Boolean)); set.has(v) ? set.delete(v) : set.add(v); store.set(k, [...set].join("|")); render(); };
 document.addEventListener("click", e => {
-  const go = e.target.closest("[data-go]");
-  if (go){ view = go.dataset.go; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
-  const tab = e.target.closest("nav.tabs button");
-  if (tab){ view = tab.dataset.view; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
-  const hold = e.target.closest(".holders li");
-  if (hold){ store.set("s51.tribe", hold.dataset.leader); view = "tribe"; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
-  const st = e.target.closest(".st-item");
-  if (st){ store.set("s51.tribe", st.dataset.leader); view = "tribe"; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
-  const th = e.target.closest("th[data-sort]");
-  if (th){ store.set("s51.csort", th.dataset.sort); render(); return; }
-  const tr = e.target.closest("tr.main");
-  if (tr){ store.set("s51.copen", store.get("s51.copen") === tr.dataset.c ? "" : tr.dataset.c); render(); return; }
-  const epb = e.target.closest(".epchips button");
-  if (epb){ store.set("s51.ep", epb.dataset.ep); render(); return; }
+  const el = sel => e.target.closest(sel);
+  let x;
+  if ((x = el("[data-go]"))) return go(x.dataset.go);
+  if ((x = el("nav.tabs button"))) return go(x.dataset.view);
+  if ((x = el(".holders li, .st-item"))) return openTribe(x.dataset.leader);
+  if ((x = el(".race-row")) && !el(".race-detail")) return toggleIn("s51.raceopen", x.dataset.race);
+  if ((x = el(".rk-more"))) return toggleIn("s51.rkopen", x.dataset.rk);
+  if ((x = el("th[data-sort]"))){ store.set("s51.csort", x.dataset.sort); return render(); }
+  if ((x = el("tr.main"))){ store.set("s51.copen", store.get("s51.copen") === x.dataset.c ? "" : x.dataset.c); return render(); }
+  if ((x = el(".epchips button"))){ store.set("s51.ep", x.dataset.ep); return render(); }
   if (e.target.id === "refresh"){ $("#sub").textContent = "Refreshing…"; load(); }
 });
 document.addEventListener("change", e => {
   if (e.target.id === "tribeSel"){ store.set("s51.tribe", e.target.value); render(); }
 });
 document.addEventListener("input", e => {
-  if (e.target.id === "q"){ store.set("s51.q", e.target.value); const pos = e.target.selectionStart; render(); const q = $("#q"); q.focus(); q.setSelectionRange(pos, pos); }
+  if (e.target.id !== "q") return;
+  store.set("s51.q", e.target.value); const pos = e.target.selectionStart; render();
+  const q = $("#q"); q.focus(); q.setSelectionRange(pos, pos);
 });
-view = store.get("s51.view") || "standings";
-const hashView = location.hash.replace("#", ""); if (["standings","tribe","castaways","episodes"].includes(hashView)) view = hashView;
+// start on the tab in the link (#castaways), else the last one used; anything unknown (like the old "all") goes to Standings
+const hashView = location.hash.replace("#", "");
+view = VIEWS.includes(hashView) ? hashView : store.get("s51.view");
+if (!VIEWS.includes(view)) view = "standings";
 render(); load();
 </script>
 </body>
