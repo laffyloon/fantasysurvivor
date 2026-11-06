@@ -739,8 +739,9 @@ function statsBlock(afterJury){
   // current rosters (same as the draft until the merge swaps)
   const gems = cs.filter(c => held(c.name) <= 3).sort((a,b) => b.season - a.season || held(a.name) - held(b.name));
   const gem = gems[0];
-  // sleeper: hidden gem on recent form. Most points lately among players still in on 3 or fewer tribes (not the gem)
-  const sleeper = alive.filter(c => held(c.name) <= 3 && c !== gem && recent(c) > 0)
+  // sleeper: hidden gem on recent form. Most points lately among players still in on 3 or fewer tribes (not the gem),
+  // and only someone actually playing well: at or above the middle of the pack lately. Nobody qualifies = no card.
+  const sleeper = alive.filter(c => held(c.name) <= 3 && c !== gem && recent(c) > 0 && recent(c) >= midRecent)
     .sort((a,b) => recent(b) - recent(a) || held(a.name) - held(b.name) || a.name.localeCompare(b.name))[0];
 
   // ---- season: net points in each pillar of the Episode Log (Outwit, Outplay, ...) ----
