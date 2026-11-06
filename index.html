@@ -246,7 +246,6 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .st-roster{flex-basis:100%;display:flex;flex-wrap:wrap;gap:2px 12px;padding:5px 26px 0 52px;font-size:12.5px;line-height:1.35;color:var(--ink-2)}
 .rp{white-space:nowrap}
 .rp b{font:700 12px "Roboto Condensed",Roboto,sans-serif;color:var(--ink-3)}
-.rp .star{font-style:normal;font-size:11px;margin-right:2px}
 .rp.out{color:var(--ink-3)}
 .rp.out span{text-decoration:line-through;text-decoration-color:rgba(215,38,30,.85)}
 .rp.out b{opacity:.7}
@@ -566,7 +565,7 @@ function vStandings(){
     const order = [...roster.filter(n => !cOf(n).out), ...roster.filter(n => cOf(n).out)];
     const players = order.map(n => {
       const c = cOf(n), isAdded = merged && t.after.length && !t.draft.includes(n), hit = q && n.toLowerCase().includes(q);
-      return `<span class="rp ${c.out ? "out" : ""} ${isAdded ? "added" : ""} ${hit ? "hit" : ""}" title="${esc(c.full || n)}${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}` : ""}${isAdded ? " · added at merge" : ""}${t.ss === n ? " · Sole Survivor pick" : ""}">${t.ss === n ? '<i class="star">★</i>' : ""}<span>${esc(n)}</span> <b>${ptsFor(t, n).pts}</b></span>`;
+      return `<span class="rp ${c.out ? "out" : ""} ${isAdded ? "added" : ""} ${hit ? "hit" : ""}" title="${esc(c.full || n)}${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}` : ""}${isAdded ? " · added at merge" : ""}"><span>${esc(n)}</span> <b>${ptsFor(t, n).pts}</b></span>`;
     }).join("");
     return `<li class="st-item" data-leader="${esc(t.leader)}" style="--tc:${t.color}">
       <span class="swatch"></span>
@@ -579,7 +578,7 @@ function vStandings(){
   }).join("");
   return `<button class="findmine" data-go="tribe"><span>See your tribe</span><small>Your players, points and history</small><b>›</b></button>
     <input class="search" id="q" placeholder="Find a tribe, leader or castaway" value="${esc(raw)}" aria-label="Search tribes and castaways">
-    <div class="keyline"><span><span class="star">★</span> Sole Survivor pick</span><span><s>Struck</s> = out</span>${merged ? '<span><span class="rp added" style="font-size:12px"><span>Name</span></span> = added at merge</span>' : ""}<span>Number = points for that tribe</span></div>
+    <div class="keyline"><span><s>Struck</s> = out</span>${merged ? '<span><span class="rp added" style="font-size:12px"><span>Name</span></span> = added at merge</span>' : ""}<span>Number = points for that tribe</span></div>
     <div class="card"><ul class="st-list">${items || '<li class="state">No matches</li>'}</ul></div>`;
 }
 
