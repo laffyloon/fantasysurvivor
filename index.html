@@ -177,15 +177,18 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .stat{padding:12px 14px}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (min-width:640px){.pair{grid-column:1/-1}}
-.pair .stat h3{font-size:13px}
-.pair .stat p{min-height:2.6em}
-.stat h3{margin:0;font:800 14px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;letter-spacing:.5px}
+.stat h3{margin:0;font:800 12.5px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-2)}
 .stat p{margin:2px 0 0;font-size:12px}
-.stat ul{list-style:none;margin:8px 0 0;padding:0}
-.stat li{display:grid;grid-template-columns:1fr auto;align-items:baseline;padding:6px 0;border-top:1px solid var(--line)}
-.stat li:first-child{border-top:0}
-.stat li span{grid-column:1;font-size:12px;color:var(--ink-3)}
-.stat li em{grid-row:1/3;grid-column:2;font:800 20px "Roboto Condensed",Roboto,sans-serif;font-style:normal}
+/* Right now rows */
+.rn h3 small{font:500 11px Roboto,sans-serif;text-transform:none;letter-spacing:0;color:var(--ink-3);margin-left:4px}
+.pair .rn h3 small{display:block;margin:2px 0 0}
+.rn ul{list-style:none;margin:6px 0 0;padding:0}
+.rn li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:baseline;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
+.rn li:first-child{border-top:0}
+.rn li span{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rn li small{font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+.rn li em{font:600 15px "Roboto Condensed",Roboto,sans-serif;font-style:normal;color:var(--ink-2);text-align:right;min-width:28px}
+.rn li em small{font:500 10px Roboto,sans-serif;color:var(--ink-3);margin-left:1px}
 /* the jury: one widget per seat, same build as the season cards, in deep "whale" blue */
 .jcard{--pc:#2f6690}
 @media (prefers-color-scheme: dark){.jcard{--pc:#6fa3cf}}
@@ -224,11 +227,6 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .pillars .pillar.open,.stats .stat.open{grid-column:1/-1}
 .open .rk-rest{display:block;columns:2;column-gap:20px}
 .open .rk-rest li{break-inside:avoid;margin-bottom:3px}
-/* inside .stat cards the older ".stat li" grid would win; reset it for the ranked lists */
-.stat .rk-rest li{grid-template-columns:16px minmax(0,1fr) auto;padding:0;border-top:0}
-.stat .rk-rest li span{grid-column:auto;font-size:12px;color:var(--ink-3)}
-.stat .rk-rest li em{grid-row:auto;grid-column:auto;font:700 12px Roboto,sans-serif;font-variant-numeric:tabular-nums}
-.stat li em small{font:500 11px Roboto,sans-serif;color:var(--ink-3);margin-left:1px}
 @media (min-width:640px){.pair.half{grid-column:auto}}
 .foot{font-size:12px;color:var(--ink-3);text-align:center;margin-top:28px}
 .foot button{background:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;color:var(--ink-2);margin-left:6px}
@@ -715,7 +713,10 @@ function statsBlock(afterJury){
   const N = D.tribes.length;
   const picks = n => D.tribes.filter(t => t.draft.includes(n)).length;
   const held = n => D.tribes.filter(t => rosterAt(t, 99).includes(n)).length;
-  const row = (name, val, sub, out) => `<li><b class="${out ? "out-name" : ""}">${esc(name)}</b><span>${sub}</span><em>${val}</em></li>`;
+  // Right now cards: a title with a small hint, then name · one quiet detail · number
+  const card = (title, hint, rows) => `<div class="card stat rn"><h3>${title}${hint ? ` <small>${hint}</small>` : ""}</h3><ul>${rows.join("")}</ul></div>`;
+  const line = (c, val, meta) => `<li><span class="${c.out ? "out-name" : ""}">${esc(c.name)}</span><small>${meta}</small><em>${val}</em></li>`;
+  const tribes = c => { const k = held(c.name); return k ? `${k} tribe${k === 1 ? "" : "s"}` : "no tribes"; };
   const merged = D.merge < 99;
 
   // ---- right now: form over the last three scored episodes ----
@@ -792,12 +793,12 @@ function statsBlock(afterJury){
   return `${span ? `<h2${afterJury ? "" : ' style="margin-top:4px"'}>Right now <small class="h2sub">${span}</small></h2>
   <p class="muted" style="font-size:13px;margin:-2px 2px 8px">Points over the last ${win.length > 1 ? `${win.length} episodes` : "episode"}, players still in the game.</p>
   <div class="stats">
-    <div class="card stat"><h3>📈 Heating up</h3><p class="muted">Most points lately</p><ul>${hot.map(c => row(c.name, signed(recent(c)), `${onTxt(held(c.name))} · ${c.season} this season`)).join("")}</ul></div>
-    ${cold.length ? `<div class="card stat"><h3>🧊 Cooling off</h3><p class="muted">Fewest points lately, on ${need}+ tribes</p><ul>${cold.map(c => row(c.name, signed(recent(c)), `${onTxt(held(c.name))} · ${c.season} this season`)).join("")}</ul></div>` : ""}
-    ${steady.length ? `<div class="card stat"><h3>🪨 Rock steady</h3><p class="muted">${solidAt}+ points almost every week, no big spikes</p><ul>${steady.map(c => row(c.name, `${avgTxt(c)}<small>/ep</small>`, `${weekly(c).slice(-5).join(" · ")} · ${onTxt(held(c.name))}`)).join("")}</ul></div>` : ""}
+    ${card("📈 Heating up", "", hot.map(c => line(c, signed(recent(c)), tribes(c))))}
+    ${cold.length ? card("🧊 Cooling off", `on ${need}+ tribes`, cold.map(c => line(c, signed(recent(c)), tribes(c)))) : ""}
+    ${steady.length ? card("🪨 Rock steady", `${solidAt}+ most weeks`, steady.map(c => line(c, `${avgTxt(c)}<small>/ep</small>`, weekly(c).slice(-5).join(" · ")))) : ""}
     <div class="pair ${steady.length ? "half" : ""}">
-      ${sleeper ? `<div class="card stat"><h3>🎯 Sleeper</h3><p class="muted">Most points lately on 3 or fewer tribes</p><ul>${row(sleeper.name, signed(recent(sleeper)), held(sleeper.name) ? onTxt(held(sleeper.name)) : "nobody has them")}</ul></div>` : ""}
-      ${gem ? `<div class="card stat"><h3>💎 Hidden gem</h3><p class="muted">Top scorer on 3 or fewer tribes</p><ul>${row(gem.name, gem.season, held(gem.name) ? onTxt(held(gem.name)) : "nobody has them", gem.out)}</ul></div>` : ""}
+      ${sleeper ? card("🎯 Sleeper", "lately, 3 or fewer tribes", [line(sleeper, signed(recent(sleeper)), tribes(sleeper))]) : ""}
+      ${gem ? card("💎 Hidden gem", "season, 3 or fewer tribes", [line(gem, gem.season, tribes(gem))]) : ""}
     </div>
   </div>` : ""}
   <h2${span ? "" : ' style="margin-top:4px"'}>Season</h2>
