@@ -951,7 +951,8 @@ async function load(){
 
 /* ---------------- events ---------------- */
 const VIEWS = ["standings", "tribe", "castaways", "episodes"];
-const go = v => { view = v; store.set("s51.view", v); render(); window.scrollTo({ top: 0 }); };
+// switching tabs closes anything left open (race rows, full rankings, an opened castaway)
+const go = v => { if (v !== view) ["s51.raceopen", "s51.rkopen", "s51.copen"].forEach(k => store.set(k, "")); view = v; store.set("s51.view", v); render(); window.scrollTo({ top: 0 }); };
 const openTribe = leader => { store.set("s51.tribe", leader); go("tribe"); };
 const toggleIn = (k, v) => { const set = new Set((store.get(k) || "").split("|").filter(Boolean)); set.has(v) ? set.delete(v) : set.add(v); store.set(k, [...set].join("|")); render(); };
 document.addEventListener("click", e => {
