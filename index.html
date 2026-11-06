@@ -196,11 +196,18 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 @media (min-width:640px){.pillars{grid-template-columns:repeat(4,1fr)}}
 .pillar{padding:10px 12px 10px;border-top:4px solid var(--pc);min-width:0}
 .pillar h3{margin:0;font:800 12px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-2)}
-.pl-top{display:flex;align-items:baseline;gap:8px;margin-top:4px}
-.pl-top b{flex:1;min-width:0;font-size:14px;line-height:1.25}
-.pl-top b small{font-size:11px;color:var(--ink-3);font-weight:500}
-.pl-top em{font:800 20px "Roboto Condensed",Roboto,sans-serif;font-style:normal}
-.pillar p{margin:2px 0 0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pillar p{margin:6px 0 0;font-size:12px}
+.rk-lead{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;column-gap:8px;margin-top:6px}
+.rk-lead b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk-lead span{grid-column:1;font-size:12px;color:var(--ink-3)}
+.rk-lead em{grid-row:1/3;grid-column:2;font:800 22px "Roboto Condensed",Roboto,sans-serif;font-style:normal}
+.rk-rest{list-style:none;margin:8px 0 0;padding:6px 0 0;border-top:1px solid var(--line);display:grid;gap:3px}
+.rk-rest li{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:6px;align-items:baseline;font-size:12px;color:var(--ink-3)}
+.rk-rest i{font-style:normal;font-size:11px;font-variant-numeric:tabular-nums;opacity:.8}
+.rk-rest span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk-rest em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums}
+.stat li em small{font:500 11px Roboto,sans-serif;color:var(--ink-3);margin-left:1px}
+@media (min-width:640px){.pair.half{grid-column:auto}}
 .stat .catlead li{grid-template-columns:1fr auto;gap:0 10px}
 .stat .catlead li span{font-size:13px;color:var(--ink-2)}
 .stat .catlead li b{grid-column:1;font-size:13px}
@@ -690,7 +697,9 @@ function statsBlock(){
   const hot = [...alive].sort((a,b) => recent(b) - recent(a) || b.season - a.season || a.name.localeCompare(b.name)).slice(0, 3);
   // cooling off: widely held players doing the least lately (the old "biggest bust", but on recent form)
   const need = Math.max(2, Math.ceil(N * 0.25));
-  const cold = alive.filter(c => held(c.name) >= need)
+  const recents = alive.map(recent).sort((a,b) => a - b);
+  const midRecent = recents.length ? recents[Math.floor((recents.length - 1) / 2)] : 0;
+  const cold = alive.filter(c => held(c.name) >= need && recent(c) <= midRecent)
     .sort((a,b) => recent(a) - recent(b) || held(b.name) - held(a.name) || a.name.localeCompare(b.name)).slice(0, 3);
   const last = D.latest;
   const best = last ? Math.max(...cs.map(c => c.eps[last] || 0)) : 0;
@@ -703,40 +712,62 @@ function statsBlock(){
   const byKey = Object.fromEntries(cs.map(c => [key(c.name), c]));
   const pil = PILLARS.map(() => new Map());
   D.events.forEach(ev => {
-    const k = pillarOf(ev.label); if (k >= PILLARS.length) return;
+    const k = pillarOf(ev.label); if (k >= PILLARS.length || /torch lit/i.test(ev.label)) return;   // surviving the week isn't a skill stat
     ev.names.forEach(n => { const c = byKey[key(n)]; if (c) pil[k].set(c, (pil[k].get(c) || 0) + ev.pts); });
   });
+  // top 5: the leader big, the next four small (ties share a number)
+  const rankList = (items, fmt = v => v) => {
+    if (!items.length) return "";
+    const rk = x => 1 + items.filter(o => o.v > x.v).length;
+    const [lead, ...rest] = items.slice(0, 5);
+    const tied = rest.some(x => rk(x) === 1);
+    const sub = [lead.sub, tied ? "tied for 1st" : ""].filter(Boolean).join(" · ");
+    return `<div class="rk-lead"><b class="${lead.c.out ? "out-name" : ""}">${esc(lead.c.name)}</b>${sub ? `<span>${sub}</span>` : ""}<em>${fmt(lead.v)}</em></div>
+      ${rest.length ? `<ol class="rk-rest">${rest.map(x => `<li><i>${rk(x)}</i><span class="${x.c.out ? "out-name" : ""}">${esc(x.c.name)}</span><em>${fmt(x.v)}</em></li>`).join("")}</ol>` : ""}`;
+  };
   const pillarCard = (k) => {
     const [, title, color] = PILLARS[k];
-    const ranked = [...pil[k]].filter(([, v]) => v > 0).sort((a,b) => b[1] - a[1] || a[0].name.localeCompare(b[0].name));
-    if (!ranked.length) return `<div class="card pillar" style="--pc:${color}"><h3>${title}</h3><p class="muted">Nobody yet</p></div>`;
-    const top = ranked[0][1], leaders = ranked.filter(([, v]) => v === top).map(([c]) => c);
-    const next = ranked.find(([, v]) => v < top);
-    const names = leaders.slice(0, 2).map(c => `<span class="${c.out ? "out-name" : ""}">${esc(c.name)}</span>`).join(" & ") + (leaders.length > 2 ? ` <small>+${leaders.length - 2}</small>` : "");
-    return `<div class="card pillar" style="--pc:${color}"><h3>${title}</h3>
-      <div class="pl-top"><b>${names}</b><em>${top}</em></div>
-      <p class="muted">${next ? `Next: ${esc(next[0].name)} · ${next[1]}` : leaders.length > 1 ? "Tied at the top" : "&nbsp;"}</p></div>`;
+    const ranked = [...pil[k]].filter(([, v]) => v > 0).sort((a,b) => b[1] - a[1] || a[0].name.localeCompare(b[0].name)).map(([c, v]) => ({ c, v }));
+    return `<div class="card pillar" style="--pc:${color}"><h3>${title}</h3>${ranked.length ? rankList(ranked) : '<p class="muted">Nobody yet</p>'}</div>`;
   };
   const used = [...new Set(Object.keys(D.pointsFor).map(pillarOf))].filter(k => k < PILLARS.length).sort();
 
-  const mp = [...cs].sort((a,b) => picks(b.name) - picks(a.name) || a.name.localeCompare(b.name)).slice(0,3);
-  const mh = [...alive].sort((a,b) => held(b.name) - held(a.name) || a.name.localeCompare(b.name)).slice(0,3);
+  const mp = [...cs].sort((a,b) => picks(b.name) - picks(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: picks(c.name), sub: `on ${Math.round(picks(c.name) / N * 100)}% of tribes` }));
+  const mh = [...alive].sort((a,b) => held(b.name) - held(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: held(c.name), sub: `on ${Math.round(held(c.name) / N * 100)}% of tribes` }));
+
+  // shelter builder: the dependable one. Points every week without the spikes. Only above-median scorers
+  // (a steady +1 for surviving isn't dependable), not the season's top 3 (everyone already knows them),
+  // and nobody already listed under Cooling off.
+  const weekly = c => scored.map(e => c.eps[e] || 0);
+  const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
+  const sd = a => { const m = mean(a); return Math.sqrt(mean(a.map(x => (x - m) ** 2))); };
+  const means = alive.map(c => mean(weekly(c))).sort((a,b) => a - b);
+  const midMean = means.length ? means[Math.floor((means.length - 1) / 2)] : 0;
+  const top3 = new Set([...cs].sort((a,b) => b.season - a.season).slice(0, 3).map(c => c.name));
+  // a "solid week" is at or above the typical weekly score of players still in (median of every player-week)
+  const allWeeks = alive.flatMap(weekly).sort((a,b) => a - b);
+  const solidAt = Math.max(1, allWeeks.length ? allWeeks[Math.floor((allWeeks.length - 1) / 2)] : 1);
+  const solid = c => weekly(c).filter(x => x >= solidAt).length;
+  const steady = scored.length >= 3 ? alive.filter(c => !top3.has(c.name) && !cold.includes(c) && mean(weekly(c)) >= midMean)
+    .sort((a,b) => solid(b) - solid(a) || sd(weekly(a)) - sd(weekly(b)) || mean(weekly(b)) - mean(weekly(a)) || a.name.localeCompare(b.name)).slice(0, 3) : [];
+  const avgTxt = c => (Math.round(mean(weekly(c)) * 10) / 10).toFixed(1);
 
   return `${span ? `<h2 style="margin-top:4px">Right now <small class="h2sub">${span}</small></h2>
   <p class="muted" style="font-size:13px;margin:-2px 2px 8px">Points over the last ${win.length > 1 ? `${win.length} episodes` : "episode"}, players still in the game. Handy for ${merged ? "swaps" : "the merge swap"}.</p>
   <div class="stats">
     <div class="card stat"><h3>📈 Heating up</h3><p class="muted">Most points lately</p><ul>${hot.map(c => row(c.name, signed(recent(c)), `${onTxt(held(c.name))} · ${c.season} this season`)).join("")}</ul></div>
     ${cold.length ? `<div class="card stat"><h3>🧊 Cooling off</h3><p class="muted">Fewest points lately, on ${need}+ tribes</p><ul>${cold.map(c => row(c.name, signed(recent(c)), `${onTxt(held(c.name))} · ${c.season} this season`)).join("")}</ul></div>` : ""}
-    <div class="pair">
+    ${steady.length ? `<div class="card stat"><h3>🛖 Shelter builder</h3><p class="muted">${solidAt}+ points almost every week, no big spikes</p><ul>${steady.map(c => row(c.name, `${avgTxt(c)}<small>/ep</small>`, `${weekly(c).slice(-5).join(" · ")} · ${onTxt(held(c.name))}`)).join("")}</ul></div>` : ""}
+    <div class="pair ${steady.length ? "half" : ""}">
       ${mvps.length ? `<div class="card stat"><h3>⭐ Ep ${last} MVP</h3><p class="muted">Top scorer last episode</p><ul>${mvps.slice(0, 2).map(c => row(c.name, signed(best), onTxt(held(c.name)), c.out)).join("")}</ul></div>` : ""}
       ${gem ? `<div class="card stat"><h3>💎 Hidden gem</h3><p class="muted">Top scorer on 3 or fewer tribes</p><ul>${row(gem.name, gem.season, picks(gem.name) ? `on ${picks(gem.name)} tribe${picks(gem.name) === 1 ? "" : "s"}` : "nobody picked them", gem.out)}</ul></div>` : ""}
     </div>
   </div>` : ""}
   <h2${span ? "" : ' style="margin-top:4px"'}>Season</h2>
-  ${used.length ? `<p class="muted" style="font-size:13px;margin:-2px 2px 8px">Most points from each part of the scoring sheet.</p><div class="pillars">${used.map(pillarCard).join("")}</div>` : ""}
+  ${used.length ? `<p class="muted" style="font-size:13px;margin:-2px 2px 8px">Top 5 in each part of the scoring sheet. Torch points left out.</p><div class="pillars">${used.map(pillarCard).join("")}</div>` : ""}
   <div class="stats" style="margin-top:10px">
-    <div class="card stat ${merged ? "" : "wide"}"><h3>Most picked</h3><p class="muted">At the draft</p><ul>${mp.map(c => row(c.name, picks(c.name), `on ${Math.round(picks(c.name) / N * 100)}% of tribes`, c.out)).join("")}</ul></div>
-    ${merged ? `<div class="card stat"><h3>Most held now</h3><p class="muted">After merge swaps</p><ul>${mh.map(c => row(c.name, held(c.name), `on ${Math.round(held(c.name) / N * 100)}% of tribes`)).join("")}</ul></div>` : ""}
+    <div class="card stat ${merged ? "" : "wide"}"><h3>Most picked</h3><p class="muted">At the draft</p>${rankList(mp)}</div>
+    ${merged ? `<div class="card stat"><h3>Most held now</h3><p class="muted">After merge swaps</p>${rankList(mh)}</div>` : ""}
   </div>`;
 }
 // one bar per castaway: how many different categories they've scored in, out of all of them (+5 bonus at season end)
