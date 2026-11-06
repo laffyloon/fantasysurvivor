@@ -735,7 +735,7 @@ function statsBlock(){
   const mp = [...cs].sort((a,b) => picks(b.name) - picks(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: picks(c.name), sub: `on ${Math.round(picks(c.name) / N * 100)}% of tribes` }));
   const mh = [...alive].sort((a,b) => held(b.name) - held(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: held(c.name), sub: `on ${Math.round(held(c.name) / N * 100)}% of tribes` }));
 
-  // shelter builder: the dependable one. Points every week without the spikes. Only above-median scorers
+  // rock steady: the dependable one. Points every week without the spikes. Only above-median scorers
   // (a steady +1 for surviving isn't dependable), not the season's top 3 (everyone already knows them),
   // and nobody already listed under Cooling off.
   const weekly = c => scored.map(e => c.eps[e] || 0);
@@ -757,7 +757,7 @@ function statsBlock(){
   <div class="stats">
     <div class="card stat"><h3>📈 Heating up</h3><p class="muted">Most points lately</p><ul>${hot.map(c => row(c.name, signed(recent(c)), `${onTxt(held(c.name))} · ${c.season} this season`)).join("")}</ul></div>
     ${cold.length ? `<div class="card stat"><h3>🧊 Cooling off</h3><p class="muted">Fewest points lately, on ${need}+ tribes</p><ul>${cold.map(c => row(c.name, signed(recent(c)), `${onTxt(held(c.name))} · ${c.season} this season`)).join("")}</ul></div>` : ""}
-    ${steady.length ? `<div class="card stat"><h3>🛖 Shelter builder</h3><p class="muted">${solidAt}+ points almost every week, no big spikes</p><ul>${steady.map(c => row(c.name, `${avgTxt(c)}<small>/ep</small>`, `${weekly(c).slice(-5).join(" · ")} · ${onTxt(held(c.name))}`)).join("")}</ul></div>` : ""}
+    ${steady.length ? `<div class="card stat"><h3>🪨 Rock steady</h3><p class="muted">${solidAt}+ points almost every week, no big spikes</p><ul>${steady.map(c => row(c.name, `${avgTxt(c)}<small>/ep</small>`, `${weekly(c).slice(-5).join(" · ")} · ${onTxt(held(c.name))}`)).join("")}</ul></div>` : ""}
     <div class="pair ${steady.length ? "half" : ""}">
       ${mvps.length ? `<div class="card stat"><h3>⭐ Ep ${last} MVP</h3><p class="muted">Top scorer last episode</p><ul>${mvps.slice(0, 2).map(c => row(c.name, signed(best), onTxt(held(c.name)), c.out)).join("")}</ul></div>` : ""}
       ${gem ? `<div class="card stat"><h3>💎 Hidden gem</h3><p class="muted">Top scorer on 3 or fewer tribes</p><ul>${row(gem.name, gem.season, picks(gem.name) ? `on ${picks(gem.name)} tribe${picks(gem.name) === 1 ? "" : "s"}` : "nobody picked them", gem.out)}</ul></div>` : ""}
