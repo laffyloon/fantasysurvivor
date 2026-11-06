@@ -86,7 +86,7 @@ main{padding:16px 0 48px}
 @media (prefers-color-scheme: dark){.pill.snuffed{background:#45291f;border-color:#6b3a28}}
 .ctable tr.out td{color:var(--ink-3)}
 .ctable tr.out td b{color:var(--ink-3)}
-.who span.left{display:inline;color:var(--neg);font-weight:600}
+.who span.left{display:inline;color:inherit}
 .st-item:hover{filter:brightness(.97)}
 .rank{width:40px;flex:none;text-align:center;font:800 16px "Roboto Condensed",Roboto,sans-serif;color:var(--ink-2)}
 .rank small{display:block;font:500 10px Roboto,sans-serif;color:var(--ink-3);letter-spacing:.4px}
@@ -214,9 +214,10 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .rk-lead .sep{font-style:normal;color:var(--ink-3);font-weight:400;margin:0 1px}
 .rk-lead b.out-name,.rk-lead b span.out-name{color:var(--ink-3)}
 .rk-lead em{grid-row:1/3;grid-column:2;font:800 22px "Roboto Condensed",Roboto,sans-serif;font-style:normal}
+.rk-lead em small{font:500 11px Roboto,sans-serif;color:var(--ink-3);margin-left:2px}
 .rk-rest{list-style:none;margin:8px 0 0;padding:6px 0 0;border-top:1px solid var(--line);display:grid;gap:3px}
-.rk-rest li{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:6px;align-items:baseline;font-size:12px;color:var(--ink-3)}
-.rk-rest i{font-style:normal;font-size:11px;font-variant-numeric:tabular-nums;opacity:.8}
+.rk-rest li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:6px;align-items:baseline;font-size:12px;color:var(--ink-3)}
+.rk-rest i{font-style:normal;font-size:10.5px;font-variant-numeric:tabular-nums;opacity:.6}
 .rk-rest span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rk-rest em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums}
 .rk-more{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;margin-top:8px;padding:6px 0 0;border:0;border-top:1px dashed var(--line);background:none;font:700 12px Roboto,sans-serif;color:var(--ink-2);cursor:pointer}
@@ -255,14 +256,15 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .cat.missing{opacity:.6;border-style:dashed}
 .race-lead{grid-column:1/-1;font-size:11px;font-weight:700;color:var(--orange-ink);margin-top:-2px}
 /* standings roster line (folded in from the old All Tribes tab) */
-.st-roster{flex-basis:100%;display:flex;flex-wrap:wrap;gap:1px 11px;padding:4px 26px 0 52px;font-size:12px;line-height:1.35;color:color-mix(in srgb,var(--ink-2) 55%,var(--ink-3))}
+.st-roster{flex-basis:100%;display:flex;flex-wrap:wrap;gap:1px 11px;padding:4px 26px 0 52px;font-size:12.5px;line-height:1.35;color:color-mix(in srgb,var(--tn) 40%,var(--ink-3))}
 .rp{white-space:nowrap}
-.rp b{font:600 11.5px "Roboto Condensed",Roboto,sans-serif;color:var(--ink-3)}
-.rp.out{color:var(--ink-3)}
+.rp b{font:600 12px "Roboto Condensed",Roboto,sans-serif;color:inherit;opacity:.8}
 .rp.out span{text-decoration:line-through;text-decoration-color:rgba(215,38,30,.85)}
 .rp.out b{opacity:.7}
 .st-item{--tn:var(--tn-l)}
-.st-item .who b{color:var(--tn,var(--ink))}
+.st-item .who b{color:var(--tn,var(--ink));font-size:17.5px}
+/* leader line: tribe tint like the roster, but bold so it sits a step above the players */
+.st-item .who > span{color:color-mix(in srgb,var(--tn) 55%,var(--ink-3));font-weight:600}
 @media (prefers-color-scheme: dark){.st-item{--tn:var(--tn-d)}}
 .ss{font-style:normal;font-size:11px;color:color-mix(in srgb,var(--orange) 28%,var(--ink-3));margin-right:2px;vertical-align:1px}
 .rp.added span,.addn{box-shadow:inset 0 -1.5px 0 color-mix(in srgb,var(--lime) 35%,var(--ink-3))}
@@ -272,7 +274,7 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .ptags{display:flex;flex-wrap:wrap;gap:3px 14px;margin-top:5px;padding-left:46px;font-size:12px;color:var(--ink-3)}
 .player.out .ptags{padding-left:38px}
 .rp.hit span{background:color-mix(in srgb,var(--orange) 30%,transparent);border-radius:3px;padding:0 2px}
-@media (max-width:420px){.st-roster{padding-left:52px;padding-right:4px;font-size:11.5px;gap:0 10px}.rp b{font-size:11px}}
+@media (max-width:420px){.st-roster{padding-left:52px;padding-right:4px;font-size:12px;gap:0 10px}.rp b{font-size:11.5px}}
 .keyline{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink-3);margin:0 2px 12px}
 .grid2{display:grid;gap:12px}
 @media (min-width:700px){.grid2{grid-template-columns:1fr 1fr}.big{font-size:54px}}
@@ -463,6 +465,18 @@ function model(st, lg, tb, cp){
   // rank from totals (ties share a rank)
   tribes.forEach(t => { t.rank = 1 + tribes.filter(o => o.total > t.total).length; t.tied = tribes.filter(o => o.total === t.total).length > 1; });
 
+  // the made-merge bonus is earned in the merge episode: the one before the first post-merge episode once that's set,
+  // else the episode after the last boot who wasn't ticked MADE MERGE. epx = episode points including that bonus
+  // (eps stays exactly as the sheet has it). total = season points plus all bonuses.
+  const preBoots = castaways.filter(c => !c.made && c.out).map(c => c.out);
+  const mergeEp = merge < 99 ? merge - 1 : castaways.some(c => c.made) && preBoots.length ? Math.max(...preBoots) + 1 : 0;
+  const mbVal = num(settings["Bonus: makes merge"]) || 5;
+  castaways.forEach(c => {
+    c.mb = c.made ? Math.min(c.bonus, mbVal) : 0;
+    c.epx = { ...c.eps }; if (c.mb && mergeEp && mergeEp <= latest) c.epx[mergeEp] = (c.epx[mergeEp] || 0) + c.mb;
+    c.total = c.season + c.bonus;
+  });
+
   // week-by-week totals and ranks, rebuilt from each episode's scores
   const ssVal = num(settings["Sole Survivor +1 value"]) || 1;
   const eps = []; for (let e = 2; e <= Math.max(latest, 2); e++) eps.push(e);
@@ -470,17 +484,17 @@ function model(st, lg, tb, cp){
     let cum = 0; t.hist = [];
     eps.forEach(e => {
       const r = rosterAt(t, e, merge);
-      cum += r.reduce((s, n) => s + (byName[n.toLowerCase()]?.eps[e] || 0), 0);
+      cum += r.reduce((s, n) => s + (byName[n.toLowerCase()]?.epx[e] || 0), 0);
       if (e >= merge && t.ss && r.includes(t.ss)) cum += ssVal * (byName[t.ss.toLowerCase()]?.sig?.[e] || 0);
       t.hist.push({ ep: e, total: cum });
     });
-    // one-time bonuses (made merge, FTC, winner, most categories) land on the latest episode, so the last point always matches the sheet
+    // later one-time bonuses (FTC, winner, most categories) land on the latest episode, so the last point always matches the sheet
     if (t.hist.length) t.hist[t.hist.length - 1].total = t.total;
   });
   eps.forEach((e, k) => tribes.forEach(t => { t.hist[k].rank = 1 + tribes.filter(o => o.hist[k].total > t.hist[k].total).length; }));
   tribes.forEach(t => { const h = t.hist; t.move = latest > 2 && h.length > 1 ? h[h.length - 2].rank - h[h.length - 1].rank : 0; });
 
-  return { settings, merge, castaways, byName, events, latest, tribes, pointsFor, catHits, sectionOf,
+  return { settings, merge, mergeEp, castaways, byName, events, latest, tribes, pointsFor, catHits, sectionOf,
     pot: { total: settings["Total collected"],
       p1: settings["Announced: 1st"] || settings["First place (70%, calculated)"] || settings["First place (70%)"],
       p2: settings["Announced: 2nd"] || settings["Second place (20%, calculated)"] || settings["Second place (20%)"],
@@ -495,7 +509,7 @@ function tribeEpisodePoints(t){
   const out = [];
   for (let e = 2; e <= Math.max(D.latest, 2); e++){
     const roster = rosterAt(t, e);
-    out.push({ ep: e, pts: roster.reduce((s, n) => s + (D.byName[n.toLowerCase()]?.eps[e] || 0), 0), post: e >= D.merge });
+    out.push({ ep: e, pts: roster.reduce((s, n) => s + (D.byName[n.toLowerCase()]?.epx[e] || 0), 0), post: e >= D.merge });
   }
   return out;
 }
@@ -556,7 +570,7 @@ const NOTES = [
 ];
 const noteFor = label => (NOTES.find(([re]) => re.test(label)) || [])[1] || "";
 const isNeg = label => (D.pointsFor[label] ?? 0) < 0;
-const cOf = n => D.byName[n.toLowerCase()] || { name: n, full:"", eps:{}, pre:0, post:0, bonus:0, season:0, categories:[], out:0 };
+const cOf = n => D.byName[n.toLowerCase()] || { name: n, full:"", eps:{}, epx:{}, pre:0, post:0, bonus:0, mb:0, season:0, total:0, categories:[], out:0 };
 // jury: anyone ticked MADE MERGE on the sheet who has since gone out, numbered in the order they left
 // "Kristin" + a quieter "Flickinger": last word of the sheet's FULL NAME, when it adds something
 const lastName = c => { const w = String(c.full || "").replace(/[“”"]/g, "").trim().split(/\s+/); const l = w.length > 1 ? w[w.length - 1] : ""; return l && l.toLowerCase() !== c.name.toLowerCase() ? l : ""; };
@@ -569,7 +583,7 @@ const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th","st","nd
 // Bonuses are included so a tribe's players add up to its total: the made-merge bonus stays with the tribe that
 // had the player through the merge episode (the draft five); later bonuses (FTC, winner, most categories) go to
 // whoever holds the player after the merge.
-const mergeBonus = c => c.made ? Math.min(c.bonus, num(D.settings["Bonus: makes merge"]) || 5) : 0;
+const mergeBonus = c => c.mb || 0;
 const lateBonus = c => c.bonus - mergeBonus(c);
 function ptsFor(t, n){
   const c = cOf(n), merged = D.merge < 99, swapped = merged && t.after.length;
@@ -591,9 +605,11 @@ function raceCats(){
 }
 // match category names loosely (case, spaces, punctuation) so a small label difference between sheet blocks can't zero a bar
 const catKey = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+// the sheet's CATEGORY HITS grid is the source of truth (a 0 there means 0); the CATEGORIES text list is only a
+// fallback for a category the grid doesn't have
 const hitsOf = (c, label) => {
   const key = catKey(label);
-  if (c.hits){ for (const h in c.hits) if (catKey(h) === key && c.hits[h]) return c.hits[h]; }
+  if (c.hits){ for (const h in c.hits) if (catKey(h) === key) return c.hits[h]; }
   return c.categories.some(x => catKey(x) === key) ? 1 : 0;
 };
 
@@ -723,20 +739,20 @@ function statsBlock(afterJury){
   const scored = [...new Set(D.events.map(e => e.ep))].sort((a,b) => a - b);
   const win = scored.slice(-3);
   const span = win.length > 1 ? `Eps ${win[0]}–${win[win.length - 1]}` : win.length ? `Ep ${win[0]}` : "";
-  const recent = c => win.reduce((s, e) => s + (c.eps[e] || 0), 0);
+  const recent = c => win.reduce((s, e) => s + (c.epx[e] || 0), 0);   // includes the made-merge bonus in its episode
   const alive = cs.filter(c => !c.out);
-  const hot = [...alive].sort((a,b) => recent(b) - recent(a) || b.season - a.season || a.name.localeCompare(b.name)).slice(0, 3);
-  // cooling off: widely held players doing the least lately (the old "biggest bust", but on recent form)
-  const need = Math.max(2, Math.ceil(N * 0.25));
+  const hot = [...alive].sort((a,b) => recent(b) - recent(a) || b.total - a.total || a.name.localeCompare(b.name)).slice(0, 3);
+  // cooling off: fewest points lately among players still in (only those at or below the middle of the pack)
   const recents = alive.map(recent).sort((a,b) => a - b);
   const midRecent = recents.length ? recents[Math.floor((recents.length - 1) / 2)] : 0;
-  const cold = alive.filter(c => held(c.name) >= need && recent(c) <= midRecent)
+  const cold = alive.filter(c => recent(c) <= midRecent)
     .sort((a,b) => recent(a) - recent(b) || held(b.name) - held(a.name) || a.name.localeCompare(b.name)).slice(0, 3);
   // current rosters (same as the draft until the merge swaps)
-  const gems = cs.filter(c => held(c.name) <= 3).sort((a,b) => b.season - a.season || held(a.name) - held(b.name));
+  const gems = cs.filter(c => held(c.name) <= 3).sort((a,b) => b.total - a.total || held(a.name) - held(b.name));
   const gem = gems[0];
-  // sleeper: hidden gem on recent form. Most points lately among players still in on 3 or fewer tribes (not the gem)
-  const sleeper = alive.filter(c => held(c.name) <= 3 && c !== gem && recent(c) > 0)
+  // sleeper: hidden gem on recent form. Most points lately among players still in on 3 or fewer tribes (not the gem),
+  // and only someone actually playing well: at or above the middle of the pack lately. Nobody qualifies = no card.
+  const sleeper = alive.filter(c => held(c.name) <= 3 && c !== gem && recent(c) > 0 && recent(c) >= midRecent)
     .sort((a,b) => recent(b) - recent(a) || held(a.name) - held(b.name) || a.name.localeCompare(b.name))[0];
 
   // ---- season: net points in each pillar of the Episode Log (Outwit, Outplay, ...) ----
@@ -750,7 +766,7 @@ function statsBlock(afterJury){
   // top 3 (leader big, next two small), with "Full rankings" to open the whole list; ties share a number
   const rkOpen = new Set((store.get("s51.rkopen") || "").split("|").filter(Boolean));
   // everyone tied for 1st shares the big spot; within a tie, players still in come before players who are out
-  const rankList = (items, id) => {
+  const rankList = (items, id, unit = "") => {
     if (!items.length) return "";
     items = [...items].sort((a,b) => b.v - a.v || (a.c.out ? 1 : 0) - (b.c.out ? 1 : 0) || a.c.name.localeCompare(b.c.name));
     const rk = x => 1 + items.filter(o => o.v > x.v).length;
@@ -759,14 +775,14 @@ function statsBlock(afterJury){
     const rest = open ? after : after.slice(0, 2);
     const sub = [items[0].sub, leads.length > 1 ? `${leads.length}-way tie` : ""].filter(Boolean).join(" · ");
     const size = leads.length === 1 ? "" : leads.length <= 2 ? "tie2" : "tie4";
-    return `<div class="rk-lead"><b class="${size}">${leads.map(x => `<span class="${x.c.out ? "out-name" : ""}">${esc(x.c.name)}</span>`).join(leads.length > 1 ? ' <i class="sep">·</i> ' : "")}</b>${sub ? `<span>${sub}</span>` : ""}<em>${items[0].v}</em></div>
-      ${rest.length ? `<ol class="rk-rest">${rest.map(x => `<li><i>${rk(x)}</i><span class="${x.c.out ? "out-name" : ""}">${esc(x.c.name)}</span><em>${x.v}</em></li>`).join("")}</ol>` : ""}
+    return `<div class="rk-lead"><b class="${size}">${leads.map(x => `<span class="${x.c.out ? "out-name" : ""}">${esc(x.c.name)}</span>`).join(leads.length > 1 ? ' <i class="sep">·</i> ' : "")}</b>${sub ? `<span>${sub}</span>` : ""}<em>${items[0].v}${unit ? `<small>${unit}</small>` : ""}</em></div>
+      ${rest.length ? `<ol class="rk-rest">${rest.map(x => `<li><i>#${rk(x)}</i><span class="${x.c.out ? "out-name" : ""}">${esc(x.c.name)}</span><em>${x.v}</em></li>`).join("")}</ol>` : ""}
       ${after.length > 2 ? `<button class="rk-more" data-rk="${id}" aria-expanded="${open}">${open ? "Show top 3" : `Full rankings · ${items.length}`}<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="${open ? "M3 7.5l3-3 3 3" : "M3 4.5l3 3 3-3"}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ""}`;
   };
   const pillarCard = (k) => {
     const [, title, color] = PILLARS[k];
     const ranked = [...pil[k]].filter(([, v]) => v > 0).sort((a,b) => b[1] - a[1] || a[0].name.localeCompare(b[0].name)).map(([c, v]) => ({ c, v }));
-    return `<div class="card pillar ${rkOpen.has(title) ? "open" : ""}" style="--pc:${color}"><h3>${title}</h3>${ranked.length ? rankList(ranked, title) : '<p class="muted">Nobody yet</p>'}</div>`;
+    return `<div class="card pillar ${rkOpen.has(title) ? "open" : ""}" style="--pc:${color}"><h3>${title}</h3>${ranked.length ? rankList(ranked, title, "pts") : '<p class="muted">Nobody yet</p>'}</div>`;
   };
   const used = [...new Set(Object.keys(D.pointsFor).map(pillarOf))].filter(k => k < PILLARS.length).sort();
 
@@ -776,12 +792,12 @@ function statsBlock(afterJury){
   // rock steady: the dependable one. Points every week without the spikes. Only above-median scorers
   // (a steady +1 for surviving isn't dependable), not the season's top 3 (everyone already knows them),
   // and nobody already listed under Cooling off.
-  const weekly = c => scored.map(e => c.eps[e] || 0);
+  const weekly = c => scored.map(e => c.eps[e] || 0);   // gameplay only: a one-time bonus isn't "steady"
   const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
   const sd = a => { const m = mean(a); return Math.sqrt(mean(a.map(x => (x - m) ** 2))); };
   const means = alive.map(c => mean(weekly(c))).sort((a,b) => a - b);
   const midMean = means.length ? means[Math.floor((means.length - 1) / 2)] : 0;
-  const top3 = new Set([...cs].sort((a,b) => b.season - a.season).slice(0, 3).map(c => c.name));
+  const top3 = new Set([...cs].sort((a,b) => b.total - a.total).slice(0, 3).map(c => c.name));
   // a "solid week" is at or above the typical weekly score of players still in (median of every player-week)
   const allWeeks = alive.flatMap(weekly).sort((a,b) => a - b);
   const solidAt = Math.max(1, allWeeks.length ? allWeeks[Math.floor((allWeeks.length - 1) / 2)] : 1);
@@ -794,15 +810,15 @@ function statsBlock(afterJury){
   <p class="muted" style="font-size:13px;margin:-2px 2px 8px">Points over the last ${win.length > 1 ? `${win.length} episodes` : "episode"}, players still in the game.</p>
   <div class="stats">
     ${card("📈 Heating up", "", hot.map(c => line(c, signed(recent(c)), tribes(c))))}
-    ${cold.length ? card("🧊 Cooling off", `on ${need}+ tribes`, cold.map(c => line(c, signed(recent(c)), tribes(c)))) : ""}
+    ${cold.length ? card("🧊 Cooling off", "", cold.map(c => line(c, signed(recent(c)), tribes(c)))) : ""}
     ${steady.length ? card("🪨 Rock steady", `${solidAt}+ most weeks`, steady.map(c => line(c, `${avgTxt(c)}<small>/ep</small>`, weekly(c).slice(-5).join(" · ")))) : ""}
     <div class="pair ${steady.length ? "half" : ""}">
       ${sleeper ? card("🎯 Sleeper", "lately, 3 or fewer tribes", [line(sleeper, signed(recent(sleeper)), tribes(sleeper))]) : ""}
-      ${gem ? card("💎 Hidden gem", "season, 3 or fewer tribes", [line(gem, gem.season, tribes(gem))]) : ""}
+      ${gem ? card("💎 Hidden gem", "season, 3 or fewer tribes", [line(gem, gem.total, tribes(gem))]) : ""}
     </div>
   </div>` : ""}
   <h2${span ? "" : ' style="margin-top:4px"'}>Season</h2>
-  ${used.length ? `<p class="muted" style="font-size:13px;margin:-2px 2px 8px">Top 3 in each part of the scoring sheet (torch points left out). Tap Full rankings for everyone.</p><div class="pillars">${used.map(pillarCard).join("")}</div>` : ""}
+  ${used.length ? `<p class="muted" style="font-size:13px;margin:-2px 2px 8px">Points earned in each section of the scoring sheet, counted separately (torch points left out).</p><div class="pillars">${used.map(pillarCard).join("")}</div>` : ""}
   <div class="stats" style="margin-top:10px">
     <div class="card stat ${merged ? "" : "wide"} ${rkOpen.has("picked") ? "open" : ""}"><h3>Most picked</h3><p class="muted">At the draft</p>${rankList(mp, "picked")}</div>
     ${merged ? `<div class="card stat ${rkOpen.has("held") ? "open" : ""}"><h3>Most held now</h3><p class="muted">After merge swaps</p>${rankList(mh, "held")}</div>` : ""}
@@ -814,7 +830,7 @@ function raceBlock(){
   const N = cats.length;
   const open = new Set((store.get("s51.raceopen") || "").split("|").filter(Boolean));
   const rows = D.castaways.map(c => ({ c, got: cats.filter(l => hitsOf(c, l) > 0) }))
-    .sort((a,b) => b.got.length - a.got.length || (a.c.out ? 1 : 0) - (b.c.out ? 1 : 0) || b.c.season - a.c.season || a.c.name.localeCompare(b.c.name));
+    .sort((a,b) => b.got.length - a.got.length || (a.c.out ? 1 : 0) - (b.c.out ? 1 : 0) || b.c.total - a.c.total || a.c.name.localeCompare(b.c.name));
   const top = rows.length ? rows[0].got.length : 0;
   const leaders = rows.filter(r => top && r.got.length === top).length;
   const chip = (l, c) => { const k = hitsOf(c, l); return `<span class="cat" style="border-left:3px solid ${pillarColor(l)}">${esc(l)} <b>${signed(D.pointsFor[l] * k)}</b>${k > 1 ? ` <small>(×${k})</small>` : ""}</span>`; };
@@ -843,18 +859,18 @@ function raceBlock(){
 }
 
 function vCastaways(){
-  const sortKey = store.get("s51.csort") || "season";
+  const sortKey = store.get("s51.csort") === "name" ? "name" : "total";
   const list = [...D.castaways].sort((a,b) => sortKey === "name" ? a.name.localeCompare(b.name) : (b[sortKey] - a[sortKey]) || a.name.localeCompare(b.name));
   const holders = n => D.tribes.filter(t => rosterAt(t, 99).includes(n)).sort((a,b) => a.leader.localeCompare(b.leader));
   const onTribes = n => holders(n).length;
   const open = store.get("s51.copen") || "";
   const inGame = list.filter(c => !c.out), outList = list.filter(c => c.out);
   const rowsFor = arr => arr.map(c => {
-    const epsHtml = Object.entries(c.eps).filter(([e]) => +e <= Math.max(D.latest, 2)).map(([e, v]) =>
+    const epsHtml = Object.entries(c.epx).filter(([e]) => +e <= Math.max(D.latest, 2)).map(([e, v]) =>
       `<div><small>Ep ${e}</small><b class="${v > 0 ? "pos" : v < 0 ? "negv" : ""}">${v}</b></div>`).join("");
     return `<tr class="main ${c.out ? "out" : ""}" data-c="${esc(c.name)}">
         <td style="width:55%"><b class="${c.out ? "out-name" : ""}">${esc(c.name)}</b>${c.made ? ' <span class="pill tiny">Merge</span>' : ""}${c.out ? ` <span class="pill tiny snuffed">${isJuror(c) ? `${ordinal(jurySeat(c))} juror · ` : ""}${c.quit ? "Quit" : "Out"} Ep ${c.out}</span>` : ""}</td>
-        <td class="num"><b>${c.season}</b></td>
+        <td class="num"><b>${c.total}</b></td>
         <td class="num">${onTribes(c.name)}</td>
       </tr>
       ${open === c.name ? `<tr class="detail"><td colspan="3"><div class="muted" style="font-size:11px;margin-top:6px">Points by episode</div><div class="eps">${epsHtml}</div>
@@ -867,7 +883,7 @@ function vCastaways(){
   const juryHtml = jury.length ? `<div class="card pillar jcard"><h3>🐋 The Jury · ${jury.length}</h3><ul class="jlist">${jury.map(c =>
     `<li><b>${esc(c.name)}</b><span>${onTxt(onTribes(c.name))}</span></li>`).join("")}</ul></div>` : "";
   return `${juryHtml}${statsBlock(!!jury.length)}${raceBlock()}<h2>All castaways</h2><div class="card" style="overflow:hidden"><table class="ctable">
-    <thead><tr>${th("name","Castaway")}${th("season","Points","num")}<th class="num">On tribes</th></tr></thead>
+    <thead><tr>${th("name","Castaway")}${th("total","Points","num")}<th class="num">On tribes</th></tr></thead>
     <tbody>${rows}</tbody></table></div>
     <p class="muted" style="font-size:12px;margin-top:10px">Tap a castaway to see their points by episode.</p>`;
 }
@@ -882,10 +898,13 @@ function vEpisodes(){
       <div class="names">${list.map(c => `<span class="out-name">${esc(c.name)}</span>`).join("")}</div></div>` : "";
   const gone = D.castaways.filter(c => c.out === ep);
   const outEv = outLine(gone.filter(c => !c.quit && !isJuror(c)), "🔥", "Torch snuffed") + outLine(gone.filter(c => !c.quit && isJuror(c)), "🐋", `Torch snuffed · joins the jury`) + outLine(gone.filter(c => c.quit), "🤡", "Quit");
-  const evs = outEv + D.events.filter(e => e.ep === ep).map(e => `<div class="ev">
+  const merged = ep === D.mergeEp ? D.castaways.filter(c => c.mb) : [];
+  const mergeEv = merged.length ? `<div class="ev"><div class="head"><span class="val pos">${signed(merged[0].mb)}</span><b>Made the merge <small class="note">(one-time bonus)</small></b></div>
+      <div class="names">${merged.map(c => `<span>${esc(c.name)}</span>`).join("")}</div></div>` : "";
+  const evs = outEv + mergeEv + D.events.filter(e => e.ep === ep).map(e => `<div class="ev">
       <div class="head"><span class="val ${e.pts < 0 ? "negv" : "pos"}">${signed(e.pts)}</span><b>${esc(e.label)}${noteFor(e.label) ? ` <small class="note">${esc(noteFor(e.label))}</small>` : ""}</b></div>
       <div class="names">${tally(e.names).map(([n, k]) => `<span>${esc(n)}${k > 1 ? ` <b>×${k}</b>` : ""}</span>`).join("")}</div></div>`).join("");
-  const top = [...D.castaways].map(c => ({ n: c.name, p: c.eps[ep] || 0 })).filter(x => x.p !== 0).sort((a,b) => b.p - a.p).slice(0, 5);
+  const top = [...D.castaways].map(c => ({ n: c.name, p: c.epx[ep] || 0 })).filter(x => x.p !== 0).sort((a,b) => b.p - a.p).slice(0, 5);
   return `<div class="epchips">${chips}</div>
     <div class="grid2">
       <div><h2 style="margin-top:0">What happened</h2><div class="card">${evs}</div></div>
@@ -932,7 +951,8 @@ async function load(){
 
 /* ---------------- events ---------------- */
 const VIEWS = ["standings", "tribe", "castaways", "episodes"];
-const go = v => { view = v; store.set("s51.view", v); render(); window.scrollTo({ top: 0 }); };
+// switching tabs closes anything left open (race rows, full rankings, an opened castaway)
+const go = v => { if (v !== view) ["s51.raceopen", "s51.rkopen", "s51.copen"].forEach(k => store.set(k, "")); view = v; store.set("s51.view", v); render(); window.scrollTo({ top: 0 }); };
 const openTribe = leader => { store.set("s51.tribe", leader); go("tribe"); };
 const toggleIn = (k, v) => { const set = new Set((store.get(k) || "").split("|").filter(Boolean)); set.has(v) ? set.delete(v) : set.add(v); store.set(k, [...set].join("|")); render(); };
 document.addEventListener("click", e => {
