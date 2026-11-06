@@ -191,6 +191,12 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .stat li:first-child{border-top:0}
 .stat li span{grid-column:1;font-size:12px;color:var(--ink-3)}
 .stat li em{grid-row:1/3;grid-column:2;font:800 20px "Roboto Condensed",Roboto,sans-serif;font-style:normal}
+.jury{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px 10px;padding:12px 14px}
+.jseat{display:flex;align-items:center;gap:10px;min-width:0}
+.jseat .jn{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:800 13px "Roboto Condensed",Roboto,sans-serif;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+.jseat div{min-width:0}
+.jseat b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jseat small{display:block;font-size:11.5px;color:var(--ink-3);white-space:nowrap}
 .h2sub{font:600 12px Roboto,sans-serif;letter-spacing:.3px;color:var(--ink-3);margin-left:6px;text-transform:none}
 .pillars{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (min-width:640px){.pillars{grid-template-columns:repeat(4,1fr)}}
@@ -553,6 +559,11 @@ const NOTES = [
 const noteFor = label => (NOTES.find(([re]) => re.test(label)) || [])[1] || "";
 const isNeg = label => (D.pointsFor[label] ?? 0) < 0;
 const cOf = n => D.byName[n.toLowerCase()] || { name: n, full:"", eps:{}, pre:0, post:0, bonus:0, season:0, categories:[], out:0 };
+// jury: anyone ticked MADE MERGE on the sheet who has since gone out, numbered in the order they left
+const isJuror = c => !!(c && c.made && c.out);
+const jurors = () => D.castaways.filter(isJuror).sort((a, b) => a.out - b.out || a.name.localeCompare(b.name));
+const jurySeat = c => isJuror(c) ? 1 + D.castaways.filter(o => isJuror(o) && o.out < c.out).length : 0;
+const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th","st","nd","rd"][n % 10] || "th");
 // what a castaway has scored for one tribe (dropped players only count up to the merge, added ones only after).
 // Bonuses are included so a tribe's players add up to its total: the made-merge bonus stays with the tribe that
 // had the player through the merge episode (the draft five); later bonuses (FTC, winner, most categories) go to
@@ -601,7 +612,7 @@ function vStandings(){
     const order = [...roster.filter(n => !cOf(n).out), ...roster.filter(n => cOf(n).out)];
     const players = order.map(n => {
       const c = cOf(n), isAdded = merged && t.after.length && !t.draft.includes(n), hit = q && n.toLowerCase().includes(q);
-      return `<span class="rp ${c.out ? "out" : ""} ${isAdded ? "added" : ""} ${hit ? "hit" : ""}" title="${esc(c.full || n)}${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}` : ""}${isAdded ? " · added at merge" : ""}${t.ss === n ? " · Sole Survivor pick" : ""}">${t.ss === n ? '<i class="ss" aria-label="Sole Survivor pick">★</i>' : ""}<span>${esc(n)}</span> <b>${ptsFor(t, n).pts}</b></span>`;
+      return `<span class="rp ${c.out ? "out" : ""} ${isAdded ? "added" : ""} ${hit ? "hit" : ""}" title="${esc(c.full || n)}${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}${isJuror(c) ? ` · ${ordinal(jurySeat(c))} juror` : ""}` : ""}${isAdded ? " · added at merge" : ""}${t.ss === n ? " · Sole Survivor pick" : ""}">${t.ss === n ? '<i class="ss" aria-label="Sole Survivor pick">★</i>' : ""}<span>${esc(n)}</span> <b>${ptsFor(t, n).pts}</b></span>`;
     }).join("");
     return `<li class="st-item" data-leader="${esc(t.leader)}" style="--tc:${t.color};--tn-l:${nameInk(t.color, false)};--tn-d:${nameInk(t.color, true)}">
       <span class="swatch"></span>
@@ -630,7 +641,7 @@ function vTribe(){
   const added = swapped ? t.after.filter(n => !t.draft.includes(n)) : [];
 
   // category breakdowns moved to the Castaways tab (category race); rows here just show who, status and points
-  const outText = c => c.out ? (c.quit ? `🤡 Quit · Ep ${c.out}` : `🔥 Out · Ep ${c.out}`) : "";
+  const outText = c => !c.out ? "" : isJuror(c) ? `⚖️ ${ordinal(jurySeat(c))} juror · ${c.quit ? "quit" : "out"} Ep ${c.out}` : c.quit ? `🤡 Quit · Ep ${c.out}` : `🔥 Out · Ep ${c.out}`;
   const playerRow = (n, kind) => {
     const c = cOf(n);
     const { pts, note } = kind === "dropped" ? { pts: ptsFor(t, n).pts, note: "for you" } : ptsFor(t, n);
@@ -638,11 +649,11 @@ function vTribe(){
     const tags = [
       ss ? `<span class="pill orange">★ Sole Survivor${c.out && kind !== "dropped" ? " · no more +1s" : ""}</span>` : "",
       kind === "added" ? '<span class="pill lime">Added at merge</span>' : "",
-      c.made && c.out ? '<span class="pill">Made merge</span>' : "",
+      isJuror(c) ? '<span class="pill">Made merge</span>' : "",
       D.winner && D.winner === n ? '<span class="pill orange">Sole Survivor winner</span>' : ""
     ].filter(Boolean).join(" ");
     const sub = kind === "dropped"
-      ? `<span class="outtag">Dropped at merge${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}` : ""}</span>`
+      ? `<span class="outtag">Dropped at merge${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}${isJuror(c) ? ` · ${ordinal(jurySeat(c))} juror` : ""}` : ""}</span>`
       : c.out ? `<span class="outtag">${outText(c)}${c.full ? ` · ${esc(c.full)}` : ""}</span>` : `<span>${esc(c.full)}</span>`;
     return `<li class="player ${kind === "dropped" ? "dropped" : ""} ${c.out && kind !== "dropped" ? "out" : ""}">
       <div class="top">${avatar(n)}
@@ -699,7 +710,7 @@ function vTribe(){
 }
 
 // Castaways stats: "Right now" moves week to week (last 3 scored episodes), "Season" is the long view
-function statsBlock(){
+function statsBlock(afterJury){
   const cs = D.castaways;
   const N = D.tribes.length;
   const picks = n => D.tribes.filter(t => t.draft.includes(n)).length;
@@ -779,7 +790,7 @@ function statsBlock(){
     .sort((a,b) => solid(b) - solid(a) || sd(weekly(a)) - sd(weekly(b)) || mean(weekly(b)) - mean(weekly(a)) || a.name.localeCompare(b.name)).slice(0, 3) : [];
   const avgTxt = c => (Math.round(mean(weekly(c)) * 10) / 10).toFixed(1);
 
-  return `${span ? `<h2 style="margin-top:4px">Right now <small class="h2sub">${span}</small></h2>
+  return `${span ? `<h2${afterJury ? "" : ' style="margin-top:4px"'}>Right now <small class="h2sub">${span}</small></h2>
   <p class="muted" style="font-size:13px;margin:-2px 2px 8px">Points over the last ${win.length > 1 ? `${win.length} episodes` : "episode"}, players still in the game.</p>
   <div class="stats">
     <div class="card stat"><h3>📈 Heating up</h3><p class="muted">Most points lately</p><ul>${hot.map(c => row(c.name, signed(recent(c)), `${onTxt(held(c.name))} · ${c.season} this season`)).join("")}</ul></div>
@@ -842,7 +853,7 @@ function vCastaways(){
     const epsHtml = Object.entries(c.eps).filter(([e]) => +e <= Math.max(D.latest, 2)).map(([e, v]) =>
       `<div><small>Ep ${e}</small><b class="${v > 0 ? "pos" : v < 0 ? "negv" : ""}">${v}</b></div>`).join("");
     return `<tr class="main ${c.out ? "out" : ""}" data-c="${esc(c.name)}">
-        <td style="width:55%"><b class="${c.out ? "out-name" : ""}">${esc(c.name)}</b>${c.made ? ' <span class="pill tiny">Merge</span>' : ""}${c.out ? ` <span class="pill tiny snuffed">${c.quit ? "Quit" : "Out"} Ep ${c.out}</span>` : ""}<div class="muted hide-sm" style="font-size:12px">${esc(c.full)}</div></td>
+        <td style="width:55%"><b class="${c.out ? "out-name" : ""}">${esc(c.name)}</b>${c.made ? ' <span class="pill tiny">Merge</span>' : ""}${c.out ? ` <span class="pill tiny snuffed">${isJuror(c) ? `${ordinal(jurySeat(c))} juror · ` : ""}${c.quit ? "Quit" : "Out"} Ep ${c.out}</span>` : ""}<div class="muted hide-sm" style="font-size:12px">${esc(c.full)}</div></td>
         <td class="num"><b>${c.season}</b></td>
         <td class="num">${onTribes(c.name)}</td>
       </tr>
@@ -852,7 +863,11 @@ function vCastaways(){
   }).join("");
   const rows = rowsFor(inGame) + (outList.length ? `<tr class="divider"><td colspan="3">Out of the game · ${outList.length}</td></tr>` + rowsFor(outList) : "");
   const th = (k, label, cls="") => `<th class="${cls}" data-sort="${k}">${label}${sortKey === k ? " ▾" : ""}</th>`;
-  return `${statsBlock()}${raceBlock()}<h2>All castaways</h2><div class="card" style="overflow:hidden"><table class="ctable">
+  const jury = jurors();
+  const juryHtml = jury.length ? `<h2 style="margin-top:4px">The Jury <small class="h2sub">${jury.length} seated</small></h2>
+    <p class="muted" style="font-size:13px;margin:-2px 2px 8px">Voted out after the merge. They'll decide who wins.</p>
+    <div class="card jury">${jury.map(c => `<div class="jseat"><span class="jn">${jurySeat(c)}</span><div><b>${esc(c.name)}</b><small>${c.quit ? "Quit" : "Out"} Ep ${c.out} · ${c.season} pts</small></div></div>`).join("")}</div>` : "";
+  return `${juryHtml}${statsBlock(!!jury.length)}${raceBlock()}<h2>All castaways</h2><div class="card" style="overflow:hidden"><table class="ctable">
     <thead><tr>${th("name","Castaway")}${th("season","Points","num")}<th class="num">On tribes</th></tr></thead>
     <tbody>${rows}</tbody></table></div>
     <p class="muted" style="font-size:12px;margin-top:10px">Tap a castaway to see their points by episode.</p>`;
@@ -867,7 +882,7 @@ function vEpisodes(){
   const outLine = (list, icon, title) => list.length ? `<div class="ev"><div class="head"><span class="val">${icon}</span><b>${title}</b></div>
       <div class="names">${list.map(c => `<span class="out-name">${esc(c.name)}</span>`).join("")}</div></div>` : "";
   const gone = D.castaways.filter(c => c.out === ep);
-  const outEv = outLine(gone.filter(c => !c.quit), "🔥", "Torch snuffed") + outLine(gone.filter(c => c.quit), "🤡", "Quit");
+  const outEv = outLine(gone.filter(c => !c.quit && !isJuror(c)), "🔥", "Torch snuffed") + outLine(gone.filter(c => !c.quit && isJuror(c)), "⚖️", `Torch snuffed · joins the jury`) + outLine(gone.filter(c => c.quit), "🤡", "Quit");
   const evs = outEv + D.events.filter(e => e.ep === ep).map(e => `<div class="ev">
       <div class="head"><span class="val ${e.pts < 0 ? "negv" : "pos"}">${signed(e.pts)}</span><b>${esc(e.label)}${noteFor(e.label) ? ` <small class="note">${esc(noteFor(e.label))}</small>` : ""}</b></div>
       <div class="names">${tally(e.names).map(([n, k]) => `<span>${esc(n)}${k > 1 ? ` <b>×${k}</b>` : ""}</span>`).join("")}</div></div>`).join("");
