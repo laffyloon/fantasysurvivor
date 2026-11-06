@@ -206,6 +206,10 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .rk-rest i{font-style:normal;font-size:11px;font-variant-numeric:tabular-nums;opacity:.8}
 .rk-rest span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rk-rest em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums}
+/* inside .stat cards the older ".stat li" grid would win; reset it for the ranked lists */
+.stat .rk-rest li{grid-template-columns:12px minmax(0,1fr) auto;padding:0;border-top:0}
+.stat .rk-rest li span{grid-column:auto;font-size:12px;color:var(--ink-3)}
+.stat .rk-rest li em{grid-row:auto;grid-column:auto;font:700 12px Roboto,sans-serif;font-variant-numeric:tabular-nums}
 .stat li em small{font:500 11px Roboto,sans-serif;color:var(--ink-3);margin-left:1px}
 @media (min-width:640px){.pair.half{grid-column:auto}}
 .stat .catlead li{grid-template-columns:1fr auto;gap:0 10px}
@@ -238,30 +242,17 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .race-detail h4{margin:8px 0 0;font:700 11px Roboto,sans-serif;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-3)}
 .cat.missing{opacity:.6;border-style:dashed}
 .race-lead{grid-column:1/-1;font-size:11px;font-weight:700;color:var(--orange-ink);margin-top:-2px}
-/* standings rosters (folded in from the old All Tribes tab) */
-.dots,.who span.dots{display:inline-flex;gap:3px;margin-left:8px;vertical-align:1px;overflow:visible}
-.dots i{width:7px;height:7px;border-radius:50%;background:var(--ink-2);opacity:.75}
-.dots i.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--ink-3);opacity:.6}
-.st-item .chev{transition:transform .15s}
-.st-item.open .chev{transform:rotate(90deg)}
-.st-more{flex-basis:100%;padding:10px 0 2px 52px;cursor:default}
-.st-more .pchips{padding:0}
-.st-more .tc-drop{padding:8px 0 0;margin:0}
-.st-open{margin-top:10px;background:none;border:0;padding:2px 0;font:700 13px Roboto,sans-serif;color:var(--ink-2);cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
-.st-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;margin:0 2px 8px}
-.st-all{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font:700 12px Roboto,sans-serif;color:var(--ink-2);cursor:pointer;white-space:nowrap}
-.st-all[aria-pressed=true]{background:var(--ink-2);border-color:var(--ink-2);color:var(--surface)}
-@media (max-width:420px){.st-more{padding-left:0}}
-.pchips{display:flex;flex-wrap:wrap;gap:5px}
-.pchip{display:inline-flex;align-items:center;gap:5px;font-size:13px;padding:3px 9px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
-.pchip b{font:700 12px "Roboto Condensed",Roboto,sans-serif;color:var(--ink-3)}
-.pchip.added{border-color:var(--lime);box-shadow:inset 0 0 0 1px var(--lime)}
-.pchip.out{background:transparent;color:var(--ink-3)}
-.pchip.out span{text-decoration:line-through;text-decoration-color:rgba(215,38,30,.85)}
-.pchip.hit{outline:2px solid var(--orange);outline-offset:1px}
-.tc-drop{font-size:12px;color:var(--ink-3)}
-.tc-drop b{color:var(--orange-ink)}
-.tc-drop span.hit{color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-color:var(--orange)}
+/* standings roster line (folded in from the old All Tribes tab) */
+.st-roster{flex-basis:100%;display:flex;flex-wrap:wrap;gap:2px 12px;padding:5px 26px 0 52px;font-size:12.5px;line-height:1.35;color:var(--ink-2)}
+.rp{white-space:nowrap}
+.rp b{font:700 12px "Roboto Condensed",Roboto,sans-serif;color:var(--ink-3)}
+.rp .star{font-style:normal;font-size:11px;margin-right:2px}
+.rp.out{color:var(--ink-3)}
+.rp.out span{text-decoration:line-through;text-decoration-color:rgba(215,38,30,.85)}
+.rp.out b{opacity:.7}
+.rp.added span{box-shadow:inset 0 -2px 0 var(--lime)}
+.rp.hit span{background:color-mix(in srgb,var(--orange) 30%,transparent);border-radius:3px;padding:0 2px}
+@media (max-width:420px){.st-roster{padding-left:52px;padding-right:4px}}
 .keyline{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink-3);margin:0 2px 12px}
 .grid2{display:grid;gap:12px}
 @media (min-width:700px){.grid2{grid-template-columns:1fr 1fr}.big{font-size:54px}}
@@ -527,12 +518,20 @@ const NOTES = [
 const noteFor = label => (NOTES.find(([re]) => re.test(label)) || [])[1] || "";
 const isNeg = label => (D.pointsFor[label] ?? 0) < 0;
 const cOf = n => D.byName[n.toLowerCase()] || { name: n, full:"", eps:{}, pre:0, post:0, bonus:0, season:0, categories:[], out:0 };
-// what a castaway has scored for one tribe (dropped players only count up to the merge, added ones only after)
+// what a castaway has scored for one tribe (dropped players only count up to the merge, added ones only after).
+// One-time bonuses (made merge etc.) are included so a tribe's players add up to its total. Which tribe keeps a
+// swapped player's bonus is read off the sheet: if the tribe's BONUSES matches its draft five, bonuses stay with the draft.
+function bonusToDraft(t){
+  if (!(D.merge < 99 && t.after.length)) return true;
+  const sum = ro => ro.reduce((s, n) => s + cOf(n).bonus, 0);
+  return t.bonus !== sum(t.after) && t.bonus === sum(t.draft);
+}
 function ptsFor(t, n){
   const c = cOf(n), merged = D.merge < 99, swapped = merged && t.after.length;
-  if (!merged) return { pts: c.pre, note: "this season" };
-  if (swapped && !t.draft.includes(n)) return { pts: c.post + c.bonus, note: `from Ep ${D.merge}` };
-  if (swapped && !t.after.includes(n)) return { pts: c.pre, note: `through Ep ${D.merge - 1}` };
+  if (!merged) return { pts: c.pre + c.bonus, note: "this season" };
+  const toDraft = bonusToDraft(t);
+  if (swapped && !t.draft.includes(n)) return { pts: c.post + (toDraft ? 0 : c.bonus), note: `from Ep ${D.merge}` };
+  if (swapped && !t.after.includes(n)) return { pts: c.pre + (toDraft ? c.bonus : 0), note: `through Ep ${D.merge - 1}` };
   return { pts: c.pre + c.post + c.bonus, note: "for this tribe" };
 }
 // category race: one segment per point-scoring category, colored by its section on the Episode Log
@@ -555,46 +554,33 @@ const hitsOf = (c, label) => {
 };
 
 /* ---------------- views ---------------- */
-// standings: one quiet row per tribe (dots = players still in), tap to unfold the roster with points
+// standings: one row per tribe with its current players and their points on a quiet second line
 function vStandings(){
   const raw = (store.get("s51.q") || ""), q = raw.trim().toLowerCase();
   const merged = D.merge < 99;
-  const all = store.get("s51.stall") === "1";
-  const open = new Set((store.get("s51.stopen") || "").split("|").filter(Boolean));
   const sorted = [...D.tribes].sort((a,b) => b.total - a.total || a.leader.localeCompare(b.leader));
-  const hasPlayer = t => q && [...t.draft, ...t.after].some(n => n.toLowerCase().includes(q));
-  const match = t => !q || (t.leader + " " + t.tribe).toLowerCase().includes(q) || hasPlayer(t);
+  const match = t => !q || (t.leader + " " + t.tribe).toLowerCase().includes(q) || [...t.draft, ...t.after].some(n => n.toLowerCase().includes(q));
   const items = sorted.filter(match).map(t => {
     const r = t.rank <= 3 ? `<span class="medal m${t.rank}">${t.rank}</span>` : `${t.rank}`;
     const roster = rosterAt(t, 99);
     const order = [...roster.filter(n => !cOf(n).out), ...roster.filter(n => cOf(n).out)];
-    const dots = order.map(n => `<i class="${cOf(n).out ? "off" : ""}"></i>`).join("");
-    const isOpen = all || open.has(t.leader) || hasPlayer(t);
-    let more = "";
-    if (isOpen){
-      const dropped = merged && t.after.length ? t.draft.filter(n => !t.after.includes(n)) : [];
-      const chips = order.map(n => {
-        const c = cOf(n), isAdded = merged && t.after.length && !t.draft.includes(n);
-        const hit = q && n.toLowerCase().includes(q);
-        return `<span class="pchip ${c.out ? "out" : ""} ${isAdded ? "added" : ""} ${hit ? "hit" : ""}" title="${esc(c.full || n)}${c.out ? ` · out Ep ${c.out}` : ""}${isAdded ? " · added at merge" : ""}${t.ss === n ? " · Sole Survivor pick" : ""}">${t.ss === n ? '<span class="star" style="text-decoration:none">★</span>' : ""}<span>${esc(n)}</span><b>${ptsFor(t, n).pts}</b></span>`;
-      }).join("");
-      const drop = dropped.length ? `<div class="tc-drop">Dropped: ${dropped.map(n => { const c = cOf(n); const hit = q && n.toLowerCase().includes(q); return `<span class="${hit ? "hit" : ""}">${esc(n)}</span> ${c.out && c.out < D.merge ? `<i>(out Ep ${c.out})</i>` : `<b>${signed(c.post + c.bonus)}</b> since`}`; }).join(", ")}</div>` : "";
-      more = `<div class="st-more"><div class="pchips">${chips}</div>${drop}<button class="st-open" data-open-tribe="${esc(t.leader)}">Open tribe page ›</button></div>`;
-    }
-    return `<li class="st-item ${isOpen ? "open" : ""}" data-st="${esc(t.leader)}" style="--tc:${t.color}" aria-expanded="${isOpen}">
+    const players = order.map(n => {
+      const c = cOf(n), isAdded = merged && t.after.length && !t.draft.includes(n), hit = q && n.toLowerCase().includes(q);
+      return `<span class="rp ${c.out ? "out" : ""} ${isAdded ? "added" : ""} ${hit ? "hit" : ""}" title="${esc(c.full || n)}${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}` : ""}${isAdded ? " · added at merge" : ""}${t.ss === n ? " · Sole Survivor pick" : ""}">${t.ss === n ? '<i class="star">★</i>' : ""}<span>${esc(n)}</span> <b>${ptsFor(t, n).pts}</b></span>`;
+    }).join("");
+    return `<li class="st-item" data-leader="${esc(t.leader)}" style="--tc:${t.color}">
       <span class="swatch"></span>
       <div class="rank">${r}${t.tied ? "<small>TIED</small>" : ""}</div>
-      <div class="who"><b>${esc(t.tribe)}</b><span>${esc(firstName(t.leader))}<span class="dots" title="${t.left} of ${t.size} still in the game" aria-label="${t.left} of ${t.size} still in the game">${dots}</span></span></div>
+      <div class="who"><b>${esc(t.tribe)}</b><span>${esc(firstName(t.leader))}${t.left < t.size ? ` · <span class="left">${t.left} of ${t.size} left</span>` : ""}</span></div>
       <div class="score">${t.total}${moveTag(t)}</div>
       <svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-      ${more}
+      <div class="st-roster">${players}</div>
     </li>`;
   }).join("");
   return `<button class="findmine" data-go="tribe"><span>See your tribe</span><small>Your players, points and history</small><b>›</b></button>
     <input class="search" id="q" placeholder="Find a tribe, leader or castaway" value="${esc(raw)}" aria-label="Search tribes and castaways">
-    <div class="st-tools"><span class="muted">Tap a tribe to see its players</span><button class="st-all" aria-pressed="${all}">${all ? "Hide rosters" : "Show all rosters"}</button></div>
-    <div class="card"><ul class="st-list">${items || '<li class="state">No matches</li>'}</ul></div>
-    <div class="keyline" style="margin-top:10px"><span><span class="dots"><i></i></span> in the game</span><span><span class="dots"><i class="off"></i></span> out</span><span><span class="star">★</span> Sole Survivor pick</span>${merged ? '<span><span class="pchip added" style="padding:0 6px;font-size:11px">green edge</span> added at merge</span>' : ""}<span>Numbers are points for that tribe</span></div>`;
+    <div class="keyline"><span><span class="star">★</span> Sole Survivor pick</span><span><s>Struck</s> = out</span>${merged ? '<span><span class="rp added" style="font-size:12px"><span>Name</span></span> = added at merge</span>' : ""}<span>Number = points for that tribe</span></div>
+    <div class="card"><ul class="st-list">${items || '<li class="state">No matches</li>'}</ul></div>`;
 }
 
 function vTribe(){
@@ -612,7 +598,7 @@ function vTribe(){
   const outText = c => c.out ? (c.quit ? `🤡 Quit · Ep ${c.out}` : `🔥 Out · Ep ${c.out}`) : "";
   const playerRow = (n, kind) => {
     const c = cOf(n);
-    const { pts, note } = kind === "dropped" ? { pts: c.pre, note: "for you" } : ptsFor(t, n);
+    const { pts, note } = kind === "dropped" ? { pts: ptsFor(t, n).pts, note: "for you" } : ptsFor(t, n);
     const ss = t.ss && t.ss === n;
     const tags = [
       ss ? `<span class="pill orange">★ Sole Survivor${c.out && kind !== "dropped" ? " · no more +1s" : ""}</span>` : "",
@@ -631,7 +617,7 @@ function vTribe(){
       ${tags ? `<div class="cats" style="margin-top:8px">${tags}</div>` : ""}
       ${kind === "dropped" ? (c.out && c.out < D.merge
         ? `<div class="since" style="color:var(--ink-3)">Already gone before the merge. Good call.</div>`
-        : `<div class="since">Scored ${signed(c.post + c.bonus)} pts for other tribes since you dropped them</div>`) : ""}
+        : `<div class="since">Scored ${signed(c.post + (bonusToDraft(t) ? 0 : c.bonus))} pts for other tribes since you dropped them</div>`) : ""}
     </li>`;
   };
   const live = current.filter(n => !cOf(n).out);
@@ -704,7 +690,8 @@ function statsBlock(){
   const last = D.latest;
   const best = last ? Math.max(...cs.map(c => c.eps[last] || 0)) : 0;
   const mvps = best > 0 ? cs.filter(c => (c.eps[last] || 0) === best) : [];
-  const gems = cs.filter(c => picks(c.name) <= 3).sort((a,b) => b.season - a.season || picks(a.name) - picks(b.name));
+  // current rosters (same as the draft until the merge swaps)
+  const gems = cs.filter(c => held(c.name) <= 3).sort((a,b) => b.season - a.season || held(a.name) - held(b.name));
   const gem = gems[0];
 
   // ---- season: net points in each pillar of the Episode Log (Outwit, Outplay, ...) ----
@@ -760,7 +747,7 @@ function statsBlock(){
     ${steady.length ? `<div class="card stat"><h3>🪨 Rock steady</h3><p class="muted">${solidAt}+ points almost every week, no big spikes</p><ul>${steady.map(c => row(c.name, `${avgTxt(c)}<small>/ep</small>`, `${weekly(c).slice(-5).join(" · ")} · ${onTxt(held(c.name))}`)).join("")}</ul></div>` : ""}
     <div class="pair ${steady.length ? "half" : ""}">
       ${mvps.length ? `<div class="card stat"><h3>⭐ Ep ${last} MVP</h3><p class="muted">Top scorer last episode</p><ul>${mvps.slice(0, 2).map(c => row(c.name, signed(best), onTxt(held(c.name)), c.out)).join("")}</ul></div>` : ""}
-      ${gem ? `<div class="card stat"><h3>💎 Hidden gem</h3><p class="muted">Top scorer on 3 or fewer tribes</p><ul>${row(gem.name, gem.season, picks(gem.name) ? `on ${picks(gem.name)} tribe${picks(gem.name) === 1 ? "" : "s"}` : "nobody picked them", gem.out)}</ul></div>` : ""}
+      ${gem ? `<div class="card stat"><h3>💎 Hidden gem</h3><p class="muted">Top scorer on 3 or fewer tribes</p><ul>${row(gem.name, gem.season, held(gem.name) ? onTxt(held(gem.name)) : "nobody has them", gem.out)}</ul></div>` : ""}
     </div>
   </div>` : ""}
   <h2${span ? "" : ' style="margin-top:4px"'}>Season</h2>
@@ -899,14 +886,8 @@ document.addEventListener("click", e => {
   if (hold){ store.set("s51.tribe", hold.dataset.leader); view = "tribe"; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
   const ot = e.target.closest("[data-open-tribe]");
   if (ot){ store.set("s51.tribe", ot.dataset.openTribe); view = "tribe"; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
-  if (e.target.closest(".st-all")){ store.set("s51.stall", store.get("s51.stall") === "1" ? "" : "1"); store.set("s51.stopen", ""); render(); return; }
   const st = e.target.closest(".st-item");
-  if (st && !e.target.closest(".st-more")){
-    const open = new Set((store.get("s51.stopen") || "").split("|").filter(Boolean));
-    if (store.get("s51.stall") === "1"){ store.set("s51.stall", ""); D.tribes.forEach(t => open.add(t.leader)); }
-    open.has(st.dataset.st) ? open.delete(st.dataset.st) : open.add(st.dataset.st);
-    store.set("s51.stopen", [...open].join("|")); render(); return;
-  }
+  if (st){ store.set("s51.tribe", st.dataset.leader); view = "tribe"; store.set("s51.view", view); render(); window.scrollTo({ top: 0 }); return; }
   const rr = e.target.closest(".race-row");
   if (rr && !e.target.closest(".race-detail")){
     const open = new Set((store.get("s51.raceopen") || "").split("|").filter(Boolean));
