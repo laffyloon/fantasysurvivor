@@ -249,6 +249,10 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .rp.out{color:var(--ink-3)}
 .rp.out span{text-decoration:line-through;text-decoration-color:rgba(215,38,30,.85)}
 .rp.out b{opacity:.7}
+.st-item{--tn:var(--tn-l)}
+.st-item .who b{color:var(--tn,var(--ink))}
+@media (prefers-color-scheme: dark){.st-item{--tn:var(--tn-d)}}
+.ss{font-style:normal;font-size:10px;color:var(--ink-3);opacity:.75;margin-right:2px;vertical-align:1px}
 .rp.added span{box-shadow:inset 0 -2px 0 var(--lime)}
 .rp.hit span{background:color-mix(in srgb,var(--orange) 30%,transparent);border-radius:3px;padding:0 2px}
 @media (max-width:420px){.st-roster{padding-left:52px;padding-right:4px}}
@@ -485,6 +489,24 @@ function firstName(full){
   return clash && parts[1] ? `${first} ${parts[1][0]}.` : first;
 }
 const inkOn = hex => { const h = hex.replace("#",""); const [r,g,b] = [0,2,4].map(i => parseInt(h.substr(i,2),16)/255).map(v => v <= .03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4)); return (0.2126*r + 0.7152*g + 0.0722*b) > 0.32 ? "#1d1d1b" : "#ffffff"; };
+// tribe color nudged darker (light mode) or lighter (dark mode) until it reads clearly on its own row tint
+const _rgb = hex => [0,2,4].map(i => parseInt(hex.replace("#","").substr(i,2),16));
+const _lum = ([r,g,b]) => { const f = v => { v /= 255; return v <= .03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4); }; return .2126*f(r) + .7152*f(g) + .0722*f(b); };
+const _cr = (a, b) => { const [x, y] = [_lum(a), _lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
+function nameInk(hex, dark){
+  const tc = _rgb(hex), surf = dark ? [37,36,31] : [255,255,255];
+  const bg = surf.map((v, i) => Math.round(v * .87 + tc[i] * .13));   // matches the row's 13% tint
+  let [r, g, b] = tc.map(v => v / 255); const mx = Math.max(r,g,b), mn = Math.min(r,g,b); let h = 0, s = 0, l = (mx + mn) / 2;
+  if (mx !== mn){ const d = mx - mn; s = l > .5 ? d / (2 - mx - mn) : d / (mx + mn);
+    h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h /= 6; }
+  s = Math.min(s, .72);   // keep it easy on the eye
+  const rgbOf = L => { if (!s) return [L,L,L].map(v => Math.round(v*255)); const q = L < .5 ? L*(1+s) : L+s-L*s, p = 2*L-q;
+    const k = t => { t = (t+1) % 1; return t < 1/6 ? p+(q-p)*6*t : t < .5 ? q : t < 2/3 ? p+(q-p)*(2/3-t)*6 : p; };
+    return [k(h+1/3), k(h), k(h-1/3)].map(v => Math.round(v*255)); };
+  let c = rgbOf(l);
+  for (let i = 0; i < 60 && _cr(c, bg) < 4.6; i++){ l = dark ? Math.min(1, l + .015) : Math.max(0, l - .015); c = rgbOf(l); }
+  return "#" + c.map(v => v.toString(16).padStart(2, "0")).join("");
+}
 const lineColor = hex => inkOn(hex) === "#ffffff" ? hex : "var(--slate-dark)";
 const moveTag = t => t.move > 0 ? `<small class="mv up" title="Up ${t.move} since last episode">▲${t.move}</small>` : t.move < 0 ? `<small class="mv down" title="Down ${-t.move} since last episode">▼${-t.move}</small>` : "";
 function rankChart(t){
@@ -518,19 +540,16 @@ const noteFor = label => (NOTES.find(([re]) => re.test(label)) || [])[1] || "";
 const isNeg = label => (D.pointsFor[label] ?? 0) < 0;
 const cOf = n => D.byName[n.toLowerCase()] || { name: n, full:"", eps:{}, pre:0, post:0, bonus:0, season:0, categories:[], out:0 };
 // what a castaway has scored for one tribe (dropped players only count up to the merge, added ones only after).
-// One-time bonuses (made merge etc.) are included so a tribe's players add up to its total. Which tribe keeps a
-// swapped player's bonus is read off the sheet: if the tribe's BONUSES matches its draft five, bonuses stay with the draft.
-function bonusToDraft(t){
-  if (!(D.merge < 99 && t.after.length)) return true;
-  const sum = ro => ro.reduce((s, n) => s + cOf(n).bonus, 0);
-  return t.bonus !== sum(t.after) && t.bonus === sum(t.draft);
-}
+// Bonuses are included so a tribe's players add up to its total: the made-merge bonus stays with the tribe that
+// had the player through the merge episode (the draft five); later bonuses (FTC, winner, most categories) go to
+// whoever holds the player after the merge.
+const mergeBonus = c => c.made ? (num(D.settings["Bonus: makes merge"]) || 5) : 0;
+const lateBonus = c => c.bonus - mergeBonus(c);
 function ptsFor(t, n){
   const c = cOf(n), merged = D.merge < 99, swapped = merged && t.after.length;
   if (!merged) return { pts: c.pre + c.bonus, note: "this season" };
-  const toDraft = bonusToDraft(t);
-  if (swapped && !t.draft.includes(n)) return { pts: c.post + (toDraft ? 0 : c.bonus), note: `from Ep ${D.merge}` };
-  if (swapped && !t.after.includes(n)) return { pts: c.pre + (toDraft ? c.bonus : 0), note: `through Ep ${D.merge - 1}` };
+  if (swapped && !t.draft.includes(n)) return { pts: c.post + lateBonus(c), note: `from Ep ${D.merge}` };
+  if (swapped && !t.after.includes(n)) return { pts: c.pre + mergeBonus(c), note: `through Ep ${D.merge - 1}` };
   return { pts: c.pre + c.post + c.bonus, note: "for this tribe" };
 }
 // category race: one segment per point-scoring category, colored by its section on the Episode Log
@@ -565,9 +584,9 @@ function vStandings(){
     const order = [...roster.filter(n => !cOf(n).out), ...roster.filter(n => cOf(n).out)];
     const players = order.map(n => {
       const c = cOf(n), isAdded = merged && t.after.length && !t.draft.includes(n), hit = q && n.toLowerCase().includes(q);
-      return `<span class="rp ${c.out ? "out" : ""} ${isAdded ? "added" : ""} ${hit ? "hit" : ""}" title="${esc(c.full || n)}${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}` : ""}${isAdded ? " · added at merge" : ""}"><span>${esc(n)}</span> <b>${ptsFor(t, n).pts}</b></span>`;
+      return `<span class="rp ${c.out ? "out" : ""} ${isAdded ? "added" : ""} ${hit ? "hit" : ""}" title="${esc(c.full || n)}${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}` : ""}${isAdded ? " · added at merge" : ""}${t.ss === n ? " · Sole Survivor pick" : ""}">${t.ss === n ? '<i class="ss" aria-label="Sole Survivor pick">★</i>' : ""}<span>${esc(n)}</span> <b>${ptsFor(t, n).pts}</b></span>`;
     }).join("");
-    return `<li class="st-item" data-leader="${esc(t.leader)}" style="--tc:${t.color}">
+    return `<li class="st-item" data-leader="${esc(t.leader)}" style="--tc:${t.color};--tn-l:${nameInk(t.color, false)};--tn-d:${nameInk(t.color, true)}">
       <span class="swatch"></span>
       <div class="rank">${r}${t.tied ? "<small>TIED</small>" : ""}</div>
       <div class="who"><b>${esc(t.tribe)}</b><span>${esc(firstName(t.leader))}${t.left < t.size ? ` · <span class="left">${t.left} of ${t.size} left</span>` : ""}</span></div>
@@ -578,7 +597,7 @@ function vStandings(){
   }).join("");
   return `<button class="findmine" data-go="tribe"><span>See your tribe</span><small>Your players, points and history</small><b>›</b></button>
     <input class="search" id="q" placeholder="Find a tribe, leader or castaway" value="${esc(raw)}" aria-label="Search tribes and castaways">
-    <div class="keyline"><span><s>Struck</s> = out</span>${merged ? '<span><span class="rp added" style="font-size:12px"><span>Name</span></span> = added at merge</span>' : ""}<span>Number = points for that tribe</span></div>
+    <div class="keyline"><span><i class="ss" style="font-style:normal">★</i> Sole Survivor pick</span><span><s>Struck</s> = out</span>${merged ? '<span><span class="rp added" style="font-size:12px"><span>Name</span></span> = added at merge</span>' : ""}<span>Number = points for that tribe</span></div>
     <div class="card"><ul class="st-list">${items || '<li class="state">No matches</li>'}</ul></div>`;
 }
 
@@ -616,7 +635,7 @@ function vTribe(){
       ${tags ? `<div class="cats" style="margin-top:8px">${tags}</div>` : ""}
       ${kind === "dropped" ? (c.out && c.out < D.merge
         ? `<div class="since" style="color:var(--ink-3)">Already gone before the merge. Good call.</div>`
-        : `<div class="since">Scored ${signed(c.post + (bonusToDraft(t) ? 0 : c.bonus))} pts for other tribes since you dropped them</div>`) : ""}
+        : `<div class="since">Scored ${signed(c.post + lateBonus(c))} pts for other tribes since you dropped them</div>`) : ""}
     </li>`;
   };
   const live = current.filter(n => !cOf(n).out);
