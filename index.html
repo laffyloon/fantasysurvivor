@@ -214,9 +214,10 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .rk-lead .sep{font-style:normal;color:var(--ink-3);font-weight:400;margin:0 1px}
 .rk-lead b.out-name,.rk-lead b span.out-name{color:var(--ink-3)}
 .rk-lead em{grid-row:1/3;grid-column:2;font:800 22px "Roboto Condensed",Roboto,sans-serif;font-style:normal}
+.rk-lead em small{font:500 11px Roboto,sans-serif;color:var(--ink-3);margin-left:2px}
 .rk-rest{list-style:none;margin:8px 0 0;padding:6px 0 0;border-top:1px solid var(--line);display:grid;gap:3px}
-.rk-rest li{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:6px;align-items:baseline;font-size:12px;color:var(--ink-3)}
-.rk-rest i{font-style:normal;font-size:11px;font-variant-numeric:tabular-nums;opacity:.8}
+.rk-rest li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:6px;align-items:baseline;font-size:12px;color:var(--ink-3)}
+.rk-rest i{font-style:normal;font-size:10.5px;font-variant-numeric:tabular-nums;opacity:.6}
 .rk-rest span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rk-rest em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums}
 .rk-more{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;margin-top:8px;padding:6px 0 0;border:0;border-top:1px dashed var(--line);background:none;font:700 12px Roboto,sans-serif;color:var(--ink-2);cursor:pointer}
@@ -592,9 +593,11 @@ function raceCats(){
 }
 // match category names loosely (case, spaces, punctuation) so a small label difference between sheet blocks can't zero a bar
 const catKey = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+// the sheet's CATEGORY HITS grid is the source of truth (a 0 there means 0); the CATEGORIES text list is only a
+// fallback for a category the grid doesn't have
 const hitsOf = (c, label) => {
   const key = catKey(label);
-  if (c.hits){ for (const h in c.hits) if (catKey(h) === key && c.hits[h]) return c.hits[h]; }
+  if (c.hits){ for (const h in c.hits) if (catKey(h) === key) return c.hits[h]; }
   return c.categories.some(x => catKey(x) === key) ? 1 : 0;
 };
 
@@ -751,7 +754,7 @@ function statsBlock(afterJury){
   // top 3 (leader big, next two small), with "Full rankings" to open the whole list; ties share a number
   const rkOpen = new Set((store.get("s51.rkopen") || "").split("|").filter(Boolean));
   // everyone tied for 1st shares the big spot; within a tie, players still in come before players who are out
-  const rankList = (items, id) => {
+  const rankList = (items, id, unit = "") => {
     if (!items.length) return "";
     items = [...items].sort((a,b) => b.v - a.v || (a.c.out ? 1 : 0) - (b.c.out ? 1 : 0) || a.c.name.localeCompare(b.c.name));
     const rk = x => 1 + items.filter(o => o.v > x.v).length;
@@ -760,14 +763,14 @@ function statsBlock(afterJury){
     const rest = open ? after : after.slice(0, 2);
     const sub = [items[0].sub, leads.length > 1 ? `${leads.length}-way tie` : ""].filter(Boolean).join(" · ");
     const size = leads.length === 1 ? "" : leads.length <= 2 ? "tie2" : "tie4";
-    return `<div class="rk-lead"><b class="${size}">${leads.map(x => `<span class="${x.c.out ? "out-name" : ""}">${esc(x.c.name)}</span>`).join(leads.length > 1 ? ' <i class="sep">·</i> ' : "")}</b>${sub ? `<span>${sub}</span>` : ""}<em>${items[0].v}</em></div>
-      ${rest.length ? `<ol class="rk-rest">${rest.map(x => `<li><i>${rk(x)}</i><span class="${x.c.out ? "out-name" : ""}">${esc(x.c.name)}</span><em>${x.v}</em></li>`).join("")}</ol>` : ""}
+    return `<div class="rk-lead"><b class="${size}">${leads.map(x => `<span class="${x.c.out ? "out-name" : ""}">${esc(x.c.name)}</span>`).join(leads.length > 1 ? ' <i class="sep">·</i> ' : "")}</b>${sub ? `<span>${sub}</span>` : ""}<em>${items[0].v}${unit ? `<small>${unit}</small>` : ""}</em></div>
+      ${rest.length ? `<ol class="rk-rest">${rest.map(x => `<li><i>#${rk(x)}</i><span class="${x.c.out ? "out-name" : ""}">${esc(x.c.name)}</span><em>${x.v}</em></li>`).join("")}</ol>` : ""}
       ${after.length > 2 ? `<button class="rk-more" data-rk="${id}" aria-expanded="${open}">${open ? "Show top 3" : `Full rankings · ${items.length}`}<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="${open ? "M3 7.5l3-3 3 3" : "M3 4.5l3 3 3-3"}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ""}`;
   };
   const pillarCard = (k) => {
     const [, title, color] = PILLARS[k];
     const ranked = [...pil[k]].filter(([, v]) => v > 0).sort((a,b) => b[1] - a[1] || a[0].name.localeCompare(b[0].name)).map(([c, v]) => ({ c, v }));
-    return `<div class="card pillar ${rkOpen.has(title) ? "open" : ""}" style="--pc:${color}"><h3>${title}</h3>${ranked.length ? rankList(ranked, title) : '<p class="muted">Nobody yet</p>'}</div>`;
+    return `<div class="card pillar ${rkOpen.has(title) ? "open" : ""}" style="--pc:${color}"><h3>${title}</h3>${ranked.length ? rankList(ranked, title, "pts") : '<p class="muted">Nobody yet</p>'}</div>`;
   };
   const used = [...new Set(Object.keys(D.pointsFor).map(pillarOf))].filter(k => k < PILLARS.length).sort();
 
@@ -803,7 +806,7 @@ function statsBlock(afterJury){
     </div>
   </div>` : ""}
   <h2${span ? "" : ' style="margin-top:4px"'}>Season</h2>
-  ${used.length ? `<p class="muted" style="font-size:13px;margin:-2px 2px 8px">Top 3 in each part of the scoring sheet (torch points left out). Tap Full rankings for everyone.</p><div class="pillars">${used.map(pillarCard).join("")}</div>` : ""}
+  ${used.length ? `<p class="muted" style="font-size:13px;margin:-2px 2px 8px">Points earned in each section of the scoring sheet, counted separately (torch points left out).</p><div class="pillars">${used.map(pillarCard).join("")}</div>` : ""}
   <div class="stats" style="margin-top:10px">
     <div class="card stat ${merged ? "" : "wide"} ${rkOpen.has("picked") ? "open" : ""}"><h3>Most picked</h3><p class="muted">At the draft</p>${rankList(mp, "picked")}</div>
     ${merged ? `<div class="card stat ${rkOpen.has("held") ? "open" : ""}"><h3>Most held now</h3><p class="muted">After merge swaps</p>${rankList(mh, "held")}</div>` : ""}
