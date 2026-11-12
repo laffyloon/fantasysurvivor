@@ -193,11 +193,11 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .jcard{--pc:#2f6690}
 @media (prefers-color-scheme: dark){.jcard{--pc:#6fa3cf}}
 .jcard{margin-top:4px}
-.jlist{list-style:none;margin:6px 0 0;padding:0}
-.jlist li{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid var(--line)}
-.jlist li:first-child{border-top:0}
-.jlist b{font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.jlist span{font-size:12px;color:var(--ink-3);white-space:nowrap}
+.jgrid{list-style:none;margin:8px 0 2px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:10px 8px}
+.jgrid li{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
+.jgrid small{font:600 10.5px Roboto,sans-serif;color:var(--ink-3);text-transform:uppercase;letter-spacing:.4px}
+.jgrid b{font-size:14px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jgrid span{font-size:11.5px;color:var(--ink-3);white-space:nowrap}
 .h2sub{font:600 12px Roboto,sans-serif;letter-spacing:.3px;color:var(--ink-3);margin-left:6px;text-transform:none}
 .pillars{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (min-width:640px){.pillars{grid-template-columns:repeat(4,1fr)}}
@@ -788,6 +788,12 @@ function statsBlock(afterJury){
   const used = [...new Set(Object.keys(D.pointsFor).map(pillarOf))].filter(k => k < PILLARS.length).sort();
 
   const mp = [...cs].filter(c => picks(c.name) > 0).sort((a,b) => picks(b.name) - picks(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: picks(c.name), sub: `on ${Math.round(picks(c.name) / N * 100)}% of tribes` }));
+  // merge moves: how many tribes dropped / picked up each player in their swaps
+  const swappers = merged ? D.tribes.filter(t => t.after.length) : [];
+  const moved = (n, from, to) => swappers.filter(t => t[from].includes(n) && !t[to].includes(n)).length;
+  const pct = v => `by ${Math.round(v / N * 100)}% of tribes`;
+  const md = cs.map(c => ({ c, v: moved(c.name, "draft", "after") })).filter(x => x.v > 0).map(x => ({ ...x, sub: pct(x.v) }));
+  const mu = cs.map(c => ({ c, v: moved(c.name, "after", "draft") })).filter(x => x.v > 0).map(x => ({ ...x, sub: pct(x.v) }));
   const mh = [...alive].filter(c => held(c.name) > 0).sort((a,b) => held(b.name) - held(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: held(c.name), sub: `on ${Math.round(held(c.name) / N * 100)}% of tribes` }));
 
   // rock steady: the dependable one. Points every week without the spikes. Only above-median scorers
@@ -823,6 +829,8 @@ function statsBlock(afterJury){
   <div class="stats" style="margin-top:10px">
     <div class="card stat ${merged ? "" : "wide"} ${rkOpen.has("picked") ? "open" : ""}"><h3>Most picked</h3><p class="muted">At the draft</p>${rankList(mp, "picked")}</div>
     ${merged ? `<div class="card stat ${rkOpen.has("held") ? "open" : ""}"><h3>Most held now</h3><p class="muted">After merge swaps</p>${rankList(mh, "held")}</div>` : ""}
+    ${md.length ? `<div class="card stat ${rkOpen.has("dropped") ? "open" : ""}"><h3>Most dropped</h3><p class="muted">At the merge</p>${rankList(md, "dropped")}</div>` : ""}
+    ${mu.length ? `<div class="card stat ${rkOpen.has("pickedup") ? "open" : ""}"><h3>Most picked up</h3><p class="muted">At the merge</p>${rankList(mu, "pickedup")}</div>` : ""}
   </div>`;
 }
 // one bar per castaway: how many different categories they've scored in, out of all of them (+5 bonus at season end)
@@ -881,8 +889,8 @@ function vCastaways(){
   const rows = rowsFor(inGame) + (outList.length ? `<tr class="divider"><td colspan="3">Out of the game · ${outList.length}</td></tr>` + rowsFor(outList) : "");
   const th = (k, label, cls="") => `<th class="${cls}" data-sort="${k}">${label}${sortKey === k ? " ▾" : ""}</th>`;
   const jury = jurors();
-  const juryHtml = jury.length ? `<div class="card pillar jcard"><h3>🐋 The Jury · ${jury.length}</h3><ul class="jlist">${jury.map(c =>
-    `<li><b>${esc(c.name)}</b><span>${onTxt(onTribes(c.name))}</span></li>`).join("")}</ul></div>` : "";
+  const juryHtml = jury.length ? `<div class="card pillar jcard"><h3>🐋 The Jury · ${jury.length}</h3><ol class="jgrid">${jury.map(c =>
+    `<li><small>${ordinal(jurySeat(c))}</small><b>${esc(c.name)}</b><span>${onTxt(onTribes(c.name)).replace(/^on /, "")}</span></li>`).join("")}</ol></div>` : "";
   return `${juryHtml}${statsBlock(!!jury.length)}${raceBlock()}<h2>All castaways</h2><div class="card" style="overflow:hidden"><table class="ctable">
     <thead><tr>${th("name","Castaway")}${th("total","Points","num")}<th class="num">On tribes</th></tr></thead>
     <tbody>${rows}</tbody></table></div>
