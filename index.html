@@ -175,13 +175,10 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .stats{display:grid;grid-template-columns:1fr;gap:10px}
 @media (min-width:640px){.stats{grid-template-columns:1fr 1fr}.stat.wide{grid-column:1/-1}}
 .stat{padding:12px 14px}
-.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media (min-width:640px){.pair{grid-column:1/-1}}
 .stat h3{margin:0;font:800 12.5px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-2)}
 .stat p{margin:2px 0 0;font-size:12px}
 /* Right now rows */
 .rn h3 small{font:500 11px Roboto,sans-serif;text-transform:none;letter-spacing:0;color:var(--ink-3);margin-left:4px}
-.pair .rn h3 small{display:block;margin:2px 0 0}
 .rn ul{list-style:none;margin:6px 0 0;padding:0}
 .rn li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:baseline;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
 .rn li:first-child{border-top:0}
@@ -228,7 +225,6 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .pillars .pillar.open,.stats .stat.open{grid-column:1/-1}
 .open .rk-rest{display:block;columns:2;column-gap:20px}
 .open .rk-rest li{break-inside:avoid;margin-bottom:3px}
-@media (min-width:640px){.pair.half{grid-column:auto}}
 .foot{font-size:12px;color:var(--ink-3);text-align:center;margin-top:28px}
 .foot button{background:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;color:var(--ink-2);margin-left:6px}
 /* old players: out rows go compact, dropped rows stay faded */
@@ -748,10 +744,10 @@ function statsBlock(afterJury){
   const midRecent = recents.length ? recents[Math.floor((recents.length - 1) / 2)] : 0;
   const cold = alive.filter(c => recent(c) <= midRecent)
     .sort((a,b) => recent(a) - recent(b) || held(b.name) - held(a.name) || a.name.localeCompare(b.name)).slice(0, 3);
-  // current rosters (same as the draft until the merge swaps)
-  const gems = cs.filter(c => held(c.name) <= 3).sort((a,b) => b.total - a.total || held(a.name) - held(b.name));
-  const gem = gems[0];
-  // sleeper: hidden gem on recent form. Most points lately among players still in on 3 or fewer tribes (not the gem),
+  // hidden gems (Season): best season totals among players still in who are on 3 or fewer tribes right now
+  const gems = alive.filter(c => held(c.name) <= 3).map(c => ({ c, v: c.total, sub: onTxt(held(c.name)) }));
+  const gem = gems.length ? gems.reduce((a, b) => b.v > a.v ? b : a).c : null;
+  // sleeper: hidden gem on recent form. Most points lately among players still in on 3 or fewer tribes (not the top gem),
   // and only someone actually playing well: at or above the middle of the pack lately. Nobody qualifies = no card.
   const sleeper = alive.filter(c => held(c.name) <= 3 && c !== gem && recent(c) > 0 && recent(c) >= midRecent)
     .sort((a,b) => recent(b) - recent(a) || held(a.name) - held(b.name) || a.name.localeCompare(b.name))[0];
@@ -819,15 +815,13 @@ function statsBlock(afterJury){
     ${card("📈 Heating up", "", hot.map(c => line(c, signed(recent(c)), tribes(c))))}
     ${cold.length ? card("🧊 Cooling off", "", cold.map(c => line(c, signed(recent(c)), tribes(c)))) : ""}
     ${steady.length ? card("🪨 Rock steady", `${solidAt}+ most weeks`, steady.map(c => line(c, `${avgTxt(c)}<small>/ep</small>`, weekly(c).slice(-5).join(" · ")))) : ""}
-    <div class="pair ${steady.length ? "half" : ""}">
-      ${sleeper ? card("🎯 Sleeper", "lately, 3 or fewer tribes", [line(sleeper, signed(recent(sleeper)), tribes(sleeper))]) : ""}
-      ${gem ? card("💎 Hidden gem", "season, 3 or fewer tribes", [line(gem, gem.total, tribes(gem))]) : ""}
-    </div>
+    ${sleeper ? card("🎯 Sleeper", "3 or fewer tribes", [line(sleeper, signed(recent(sleeper)), tribes(sleeper))]) : ""}
   </div>` : ""}
   <h2${span ? "" : ' style="margin-top:4px"'}>Season</h2>
   ${used.length ? `<p class="muted" style="font-size:13px;margin:-2px 2px 8px">Points earned in each section of the scoring sheet, counted separately (torch points left out).</p><div class="pillars">${used.map(pillarCard).join("")}</div>` : ""}
   <div class="stats" style="margin-top:10px">
-    <div class="card stat ${merged ? "" : "wide"} ${rkOpen.has("picked") ? "open" : ""}"><h3>Most picked</h3><p class="muted">At the draft</p>${rankList(mp, "picked")}</div>
+    ${gems.length ? `<div class="card stat ${merged ? "wide" : ""} ${rkOpen.has("gems") ? "open" : ""}"><h3>💎 Hidden gems</h3><p class="muted">Most points, still in, on 3 or fewer tribes</p>${rankList(gems, "gems")}</div>` : ""}
+    <div class="card stat ${merged || gems.length ? "" : "wide"} ${rkOpen.has("picked") ? "open" : ""}"><h3>Most picked</h3><p class="muted">At the draft</p>${rankList(mp, "picked")}</div>
     ${merged ? `<div class="card stat ${rkOpen.has("held") ? "open" : ""}"><h3>Most held now</h3><p class="muted">After merge swaps</p>${rankList(mh, "held")}</div>` : ""}
     ${md.length ? `<div class="card stat ${rkOpen.has("dropped") ? "open" : ""}"><h3>Most dropped</h3><p class="muted">At the merge</p>${rankList(md, "dropped")}</div>` : ""}
     ${mu.length ? `<div class="card stat ${rkOpen.has("pickedup") ? "open" : ""}"><h3>Most picked up</h3><p class="muted">At the merge</p>${rankList(mu, "pickedup")}</div>` : ""}
