@@ -654,7 +654,7 @@ function vTribe(){
   const merged = D.merge < 99;
   const swapped = merged && t.after.length;
   const current = swapped ? t.after : t.draft;
-  const dropped = swapped ? t.draft.filter(n => !t.after.includes(n)) : [];
+  const dropped = swapped ? t.draft.filter(n => !t.after.includes(n)).sort((a, b) => a.localeCompare(b)) : [];
   const added = swapped ? t.after.filter(n => !t.draft.includes(n)) : [];
 
   // category breakdowns moved to the Castaways tab (category race); rows here just show who, status and points
@@ -680,8 +680,9 @@ function vTribe(){
       ${kind === "dropped" && !(c.out && c.out < D.merge) ? `<div class="since">${signed(c.post + lateBonus(c))} pts since you dropped them</div>` : ""}
     </li>`;
   };
-  const live = current.filter(n => !cOf(n).out);
-  const gone = current.filter(n => cOf(n).out).sort((a, b) => cOf(b).out - cOf(a).out);
+  // same order as Standings, whatever order the sheet lists them in: players still in A to Z, then out players (first out last)
+  const live = current.filter(n => !cOf(n).out).sort((a, b) => a.localeCompare(b));
+  const gone = current.filter(n => cOf(n).out).sort((a, b) => cOf(b).out - cOf(a).out || a.localeCompare(b));
   const kindOf = n => added.includes(n) ? "added" : "";
 
   const epPts = tribeEpisodePoints(t);
