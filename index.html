@@ -175,13 +175,10 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .stats{display:grid;grid-template-columns:1fr;gap:10px}
 @media (min-width:640px){.stats{grid-template-columns:1fr 1fr}.stat.wide{grid-column:1/-1}}
 .stat{padding:12px 14px}
-.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media (min-width:640px){.pair{grid-column:1/-1}}
 .stat h3{margin:0;font:800 12.5px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-2)}
 .stat p{margin:2px 0 0;font-size:12px}
 /* Right now rows */
 .rn h3 small{font:500 11px Roboto,sans-serif;text-transform:none;letter-spacing:0;color:var(--ink-3);margin-left:4px}
-.pair .rn h3 small{display:block;margin:2px 0 0}
 .rn ul{list-style:none;margin:6px 0 0;padding:0}
 .rn li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:baseline;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
 .rn li:first-child{border-top:0}
@@ -193,11 +190,11 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .jcard{--pc:#2f6690}
 @media (prefers-color-scheme: dark){.jcard{--pc:#6fa3cf}}
 .jcard{margin-top:4px}
-.jlist{list-style:none;margin:6px 0 0;padding:0}
-.jlist li{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid var(--line)}
-.jlist li:first-child{border-top:0}
-.jlist b{font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.jlist span{font-size:12px;color:var(--ink-3);white-space:nowrap}
+.jgrid{list-style:none;margin:8px 0 2px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:10px 8px}
+.jgrid li{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
+.jgrid small{font:600 10.5px Roboto,sans-serif;color:var(--ink-3);text-transform:uppercase;letter-spacing:.4px}
+.jgrid b{font-size:14px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jgrid span{font-size:11.5px;color:var(--ink-3);white-space:nowrap}
 .h2sub{font:600 12px Roboto,sans-serif;letter-spacing:.3px;color:var(--ink-3);margin-left:6px;text-transform:none}
 .pillars{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (min-width:640px){.pillars{grid-template-columns:repeat(4,1fr)}}
@@ -228,7 +225,6 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .pillars .pillar.open,.stats .stat.open{grid-column:1/-1}
 .open .rk-rest{display:block;columns:2;column-gap:20px}
 .open .rk-rest li{break-inside:avoid;margin-bottom:3px}
-@media (min-width:640px){.pair.half{grid-column:auto}}
 .foot{font-size:12px;color:var(--ink-3);text-align:center;margin-top:28px}
 .foot button{background:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;color:var(--ink-2);margin-left:6px}
 /* old players: out rows go compact, dropped rows stay faded */
@@ -654,7 +650,7 @@ function vTribe(){
   const merged = D.merge < 99;
   const swapped = merged && t.after.length;
   const current = swapped ? t.after : t.draft;
-  const dropped = swapped ? t.draft.filter(n => !t.after.includes(n)) : [];
+  const dropped = swapped ? t.draft.filter(n => !t.after.includes(n)).sort((a, b) => a.localeCompare(b)) : [];
   const added = swapped ? t.after.filter(n => !t.draft.includes(n)) : [];
 
   // category breakdowns moved to the Castaways tab (category race); rows here just show who, status and points
@@ -680,8 +676,9 @@ function vTribe(){
       ${kind === "dropped" && !(c.out && c.out < D.merge) ? `<div class="since">${signed(c.post + lateBonus(c))} pts since you dropped them</div>` : ""}
     </li>`;
   };
-  const live = current.filter(n => !cOf(n).out);
-  const gone = current.filter(n => cOf(n).out).sort((a, b) => cOf(b).out - cOf(a).out);
+  // same order as Standings, whatever order the sheet lists them in: players still in A to Z, then out players (first out last)
+  const live = current.filter(n => !cOf(n).out).sort((a, b) => a.localeCompare(b));
+  const gone = current.filter(n => cOf(n).out).sort((a, b) => cOf(b).out - cOf(a).out || a.localeCompare(b));
   const kindOf = n => added.includes(n) ? "added" : "";
 
   const epPts = tribeEpisodePoints(t);
@@ -747,10 +744,10 @@ function statsBlock(afterJury){
   const midRecent = recents.length ? recents[Math.floor((recents.length - 1) / 2)] : 0;
   const cold = alive.filter(c => recent(c) <= midRecent)
     .sort((a,b) => recent(a) - recent(b) || held(b.name) - held(a.name) || a.name.localeCompare(b.name)).slice(0, 3);
-  // current rosters (same as the draft until the merge swaps)
-  const gems = cs.filter(c => held(c.name) <= 3).sort((a,b) => b.total - a.total || held(a.name) - held(b.name));
-  const gem = gems[0];
-  // sleeper: hidden gem on recent form. Most points lately among players still in on 3 or fewer tribes (not the gem),
+  // hidden gems (Season): best season totals among players still in who are on 3 or fewer tribes right now
+  const gems = alive.filter(c => held(c.name) <= 3).map(c => ({ c, v: c.total, sub: onTxt(held(c.name)) }));
+  const gem = gems.length ? gems.reduce((a, b) => b.v > a.v ? b : a).c : null;
+  // sleeper: hidden gem on recent form. Most points lately among players still in on 3 or fewer tribes (not the top gem),
   // and only someone actually playing well: at or above the middle of the pack lately. Nobody qualifies = no card.
   const sleeper = alive.filter(c => held(c.name) <= 3 && c !== gem && recent(c) > 0 && recent(c) >= midRecent)
     .sort((a,b) => recent(b) - recent(a) || held(a.name) - held(b.name) || a.name.localeCompare(b.name))[0];
@@ -787,6 +784,12 @@ function statsBlock(afterJury){
   const used = [...new Set(Object.keys(D.pointsFor).map(pillarOf))].filter(k => k < PILLARS.length).sort();
 
   const mp = [...cs].filter(c => picks(c.name) > 0).sort((a,b) => picks(b.name) - picks(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: picks(c.name), sub: `on ${Math.round(picks(c.name) / N * 100)}% of tribes` }));
+  // merge moves: how many tribes dropped / picked up each player in their swaps
+  const swappers = merged ? D.tribes.filter(t => t.after.length) : [];
+  const moved = (n, from, to) => swappers.filter(t => t[from].includes(n) && !t[to].includes(n)).length;
+  const pct = v => `by ${Math.round(v / N * 100)}% of tribes`;
+  const md = cs.map(c => ({ c, v: moved(c.name, "draft", "after") })).filter(x => x.v > 0).map(x => ({ ...x, sub: pct(x.v) }));
+  const mu = cs.map(c => ({ c, v: moved(c.name, "after", "draft") })).filter(x => x.v > 0).map(x => ({ ...x, sub: pct(x.v) }));
   const mh = [...alive].filter(c => held(c.name) > 0).sort((a,b) => held(b.name) - held(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: held(c.name), sub: `on ${Math.round(held(c.name) / N * 100)}% of tribes` }));
 
   // rock steady: the dependable one. Points every week without the spikes. Only above-median scorers
@@ -812,16 +815,16 @@ function statsBlock(afterJury){
     ${card("📈 Heating up", "", hot.map(c => line(c, signed(recent(c)), tribes(c))))}
     ${cold.length ? card("🧊 Cooling off", "", cold.map(c => line(c, signed(recent(c)), tribes(c)))) : ""}
     ${steady.length ? card("🪨 Rock steady", `${solidAt}+ most weeks`, steady.map(c => line(c, `${avgTxt(c)}<small>/ep</small>`, weekly(c).slice(-5).join(" · ")))) : ""}
-    <div class="pair ${steady.length ? "half" : ""}">
-      ${sleeper ? card("🎯 Sleeper", "lately, 3 or fewer tribes", [line(sleeper, signed(recent(sleeper)), tribes(sleeper))]) : ""}
-      ${gem ? card("💎 Hidden gem", "season, 3 or fewer tribes", [line(gem, gem.total, tribes(gem))]) : ""}
-    </div>
+    ${sleeper ? card("🎯 Sleeper", "3 or fewer tribes", [line(sleeper, signed(recent(sleeper)), tribes(sleeper))]) : ""}
   </div>` : ""}
   <h2${span ? "" : ' style="margin-top:4px"'}>Season</h2>
   ${used.length ? `<p class="muted" style="font-size:13px;margin:-2px 2px 8px">Points earned in each section of the scoring sheet, counted separately (torch points left out).</p><div class="pillars">${used.map(pillarCard).join("")}</div>` : ""}
   <div class="stats" style="margin-top:10px">
-    <div class="card stat ${merged ? "" : "wide"} ${rkOpen.has("picked") ? "open" : ""}"><h3>Most picked</h3><p class="muted">At the draft</p>${rankList(mp, "picked")}</div>
+    ${gems.length ? `<div class="card stat ${merged ? "wide" : ""} ${rkOpen.has("gems") ? "open" : ""}"><h3>💎 Hidden gems</h3><p class="muted">Most points, still in, on 3 or fewer tribes</p>${rankList(gems, "gems")}</div>` : ""}
+    <div class="card stat ${merged || gems.length ? "" : "wide"} ${rkOpen.has("picked") ? "open" : ""}"><h3>Most picked</h3><p class="muted">At the draft</p>${rankList(mp, "picked")}</div>
     ${merged ? `<div class="card stat ${rkOpen.has("held") ? "open" : ""}"><h3>Most held now</h3><p class="muted">After merge swaps</p>${rankList(mh, "held")}</div>` : ""}
+    ${md.length ? `<div class="card stat ${rkOpen.has("dropped") ? "open" : ""}"><h3>Most dropped</h3><p class="muted">At the merge</p>${rankList(md, "dropped")}</div>` : ""}
+    ${mu.length ? `<div class="card stat ${rkOpen.has("pickedup") ? "open" : ""}"><h3>Most picked up</h3><p class="muted">At the merge</p>${rankList(mu, "pickedup")}</div>` : ""}
   </div>`;
 }
 // one bar per castaway: how many different categories they've scored in, out of all of them (+5 bonus at season end)
@@ -880,8 +883,8 @@ function vCastaways(){
   const rows = rowsFor(inGame) + (outList.length ? `<tr class="divider"><td colspan="3">Out of the game · ${outList.length}</td></tr>` + rowsFor(outList) : "");
   const th = (k, label, cls="") => `<th class="${cls}" data-sort="${k}">${label}${sortKey === k ? " ▾" : ""}</th>`;
   const jury = jurors();
-  const juryHtml = jury.length ? `<div class="card pillar jcard"><h3>🐋 The Jury · ${jury.length}</h3><ul class="jlist">${jury.map(c =>
-    `<li><b>${esc(c.name)}</b><span>${onTxt(onTribes(c.name))}</span></li>`).join("")}</ul></div>` : "";
+  const juryHtml = jury.length ? `<div class="card pillar jcard"><h3>🐋 The Jury · ${jury.length}</h3><ol class="jgrid">${jury.map(c =>
+    `<li><small>${ordinal(jurySeat(c))}</small><b>${esc(c.name)}</b><span>${onTxt(onTribes(c.name)).replace(/^on /, "")}</span></li>`).join("")}</ol></div>` : "";
   return `${juryHtml}${statsBlock(!!jury.length)}${raceBlock()}<h2>All castaways</h2><div class="card" style="overflow:hidden"><table class="ctable">
     <thead><tr>${th("name","Castaway")}${th("total","Points","num")}<th class="num">On tribes</th></tr></thead>
     <tbody>${rows}</tbody></table></div>
