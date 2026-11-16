@@ -572,8 +572,12 @@ const cOf = n => D.byName[n.toLowerCase()] || { name: n, full:"", eps:{}, epx:{}
 const lastName = c => { const w = String(c.full || "").replace(/[“”"]/g, "").trim().split(/\s+/); const l = w.length > 1 ? w[w.length - 1] : ""; return l && l.toLowerCase() !== c.name.toLowerCase() ? l : ""; };
 const onTxt = k => k ? `on ${k} tribe${k === 1 ? "" : "s"}` : "on no tribes";
 const isJuror = c => !!(c && c.made && c.out);
-const jurors = () => D.castaways.filter(isJuror).sort((a, b) => a.out - b.out || a.name.localeCompare(b.name));
-const jurySeat = c => isJuror(c) ? 1 + D.castaways.filter(o => isJuror(o) && o.out < c.out).length : 0;
+// seats follow the episode they left; two out in the same episode follow the sheet's optional "Jury order" setting
+// (jurors listed first to last, comma-separated), else A to Z. Every juror gets their own seat.
+const juryOrder = () => String(D.settings["Jury order"] || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+const jurors = () => { const ord = juryOrder(), pos = c => { const i = ord.indexOf(c.name.toLowerCase()); return i < 0 ? Infinity : i; };
+  return D.castaways.filter(isJuror).sort((a, b) => a.out - b.out || pos(a) - pos(b) || a.name.localeCompare(b.name)); };
+const jurySeat = c => isJuror(c) ? 1 + jurors().indexOf(c) : 0;
 const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th","st","nd","rd"][n % 10] || "th");
 // what a castaway has scored for one tribe (dropped players only count up to the merge, added ones only after).
 // Bonuses are included so a tribe's players add up to its total: the made-merge bonus stays with the tribe that
@@ -900,7 +904,7 @@ function vEpisodes(){
   const outLine = (list, icon, title) => list.length ? `<div class="ev"><div class="head"><span class="val">${icon}</span><b>${title}</b></div>
       <div class="names">${list.map(c => `<span class="out-name">${esc(c.name)}</span>`).join("")}</div></div>` : "";
   const gone = D.castaways.filter(c => c.out === ep);
-  const outEv = outLine(gone.filter(c => !c.quit && !isJuror(c)), "🔥", "Torch snuffed") + outLine(gone.filter(c => !c.quit && isJuror(c)), "🐋", `Torch snuffed · joins the jury`) + outLine(gone.filter(c => c.quit), "🤡", "Quit");
+  const outEv = outLine(gone.filter(c => !c.quit && !isJuror(c)), "🔥", "Torch snuffed") + outLine(gone.filter(c => !c.quit && isJuror(c)).sort((a, b) => jurySeat(a) - jurySeat(b)), "🐋", `Torch snuffed · joins the jury`) + outLine(gone.filter(c => c.quit), "🤡", "Quit");
   const merged = ep === D.mergeEp ? D.castaways.filter(c => c.mb) : [];
   const mergeEv = merged.length ? `<div class="ev"><div class="head"><span class="val pos">${signed(merged[0].mb)}</span><b>Made the merge <small class="note">(one-time bonus)</small></b></div>
       <div class="names">${merged.map(c => `<span>${esc(c.name)}</span>`).join("")}</div></div>` : "";
