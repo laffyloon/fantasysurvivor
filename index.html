@@ -266,7 +266,9 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .ss{font-style:normal;font-size:11px;color:color-mix(in srgb,var(--orange) 28%,var(--ink-3));margin-right:2px;vertical-align:1px}
 .rp.added span,.addn{box-shadow:inset 0 -1.5px 0 color-mix(in srgb,var(--lime) 35%,var(--ink-3))}
 .addn{text-decoration:none}
-.ssx{font:500 10.5px Roboto,sans-serif;color:var(--ink-3);margin-left:4px;white-space:nowrap}
+.ssx{font:600 11px Roboto,sans-serif;color:var(--ink-2);margin-left:4px;white-space:nowrap}
+.ssx .ssn{font-weight:700;color:color-mix(in srgb,var(--orange) 28%,var(--ink-3))}
+.player .pts small.ssx{font:600 11.5px Roboto,sans-serif;color:var(--ink-2);margin:0}
 td.num .ssx{display:block;margin:0}
 .ln{font-size:.8em;font-weight:400;color:var(--ink-3);margin-left:1px}
 /* My Tribe player notes: same quiet treatment as Standings */
@@ -596,7 +598,8 @@ const isSSNow = (t, n) => !!t.ss && t.ss === n && rosterAt(t, 99).includes(n);
 // what a player shows for a tribe: their points for that tribe, plus the tribe's Sole Survivor bonus if they're its pick
 const shownPts = (t, n) => ptsFor(t, n).pts + (isSSNow(t, n) ? t.ssPts : 0);
 // the small "+2 SS" piece, same look on every tab. own given: "8 + 2 SS" (number shown already includes it); no own: "+2 SS" (extra)
-const ssBit = (v, own) => `<small class="ssx">${own === undefined ? signed(v) : `${own} ${v < 0 ? "−" : "+"} ${Math.abs(v)}`} SS</small>`;
+// SSB = Sole Survivor bonus; the bonus number is in the star's color
+const ssBit = (v, own) => `<small class="ssx">${own === undefined ? `<b class="ssn">${signed(v)}</b>` : `${own} <b class="ssn">${v < 0 ? "−" : "+"} ${Math.abs(v)}</b>`} SSB</small>`;
 // a castaway's Sole Survivor bonus per tribe that has them as Sole Survivor right now (null if nobody does)
 const ssOf = n => { const ts = D.tribes.filter(t => isSSNow(t, n)); return ts.length ? { v: Math.max(...ts.map(t => t.ssPts)), k: ts.length } : null; };
 const mergeBonus = c => c.mb || 0;
@@ -606,7 +609,7 @@ function ptsFor(t, n){
   if (!merged) return { pts: c.pre + c.bonus, note: "this season" };
   if (swapped && !t.draft.includes(n)) return { pts: c.post + lateBonus(c), note: `from Ep ${D.merge}` };
   if (swapped && !t.after.includes(n)) return { pts: c.pre + mergeBonus(c), note: `through Ep ${D.merge - 1}` };
-  return { pts: c.pre + c.post + c.bonus, note: "for this tribe" };
+  return { pts: c.pre + c.post + c.bonus, note: "" };
 }
 // category race: one segment per point-scoring category, colored by its section on the Episode Log
 const PILLARS = [[/outwit/i, "Outwit", "#3d8fd1"], [/outplay/i, "Outplay", "#ff9900"], [/outlast/i, "Outlast", "#86b800"], [/trick/i, "Bag of Tricks", "#a46fd6"]];
@@ -680,7 +683,7 @@ function vTribe(){
     const ss = kind !== "dropped" && isSSNow(t, n);
     const { pts: own, note: baseNote } = kind === "dropped" ? { pts: ptsFor(t, n).pts, note: "for you" } : ptsFor(t, n);
     const pts = own + (ss ? t.ssPts : 0);
-    const note = ss && t.ssPts ? ssBit(t.ssPts, own).replace(/<\/?small[^>]*>/g, "") : baseNote;
+    const note = ss && t.ssPts ? ssBit(t.ssPts, own).replace(/^<small class="ssx">|<\/small>$/g, "") : baseNote;
     const tags = [
       ss ? `<span><i class="ss">★</i>Sole Survivor${c.out ? " · no more bonus" : ""}</span>` : "",
       kind === "added" ? '<span><u class="addn">Added at merge</u></span>' : "",
@@ -693,7 +696,7 @@ function vTribe(){
     return `<li class="player ${kind === "dropped" ? "dropped" : ""} ${c.out && kind !== "dropped" ? "out" : ""}">
       <div class="top">${avatar(n)}
         <div class="who"><b class="${c.out ? "out-name" : ""}">${kind === "added" ? `<u class="addn">${esc(n)}</u>` : esc(n)}${lastName(c) ? ` <small class="ln">${esc(lastName(c))}</small>` : ""}</b>${sub}</div>
-        <div class="pts">${pts}<small>${note}</small></div>
+        <div class="pts">${pts}${note ? `<small class="${ss && t.ssPts ? "ssx" : ""}">${note}</small>` : ""}</div>
       </div>
       ${tags ? `<div class="ptags">${tags}</div>` : ""}
       ${kind === "dropped" && !(c.out && c.out < D.merge) ? `<div class="since">${signed(c.post + lateBonus(c))} pts since you dropped them</div>` : ""}
@@ -925,7 +928,7 @@ function vEpisodes(){
   const ssEv = ssPicks.length ? `<div class="ev"><div class="head"><span class="val"><i class="ss">★</i></span><b>Sole Survivor bonus <small class="note">(extra, for tribes with them as Sole Survivor)</small></b></div>
       <div class="names">${ssPicks.sort((a, b) => b.v - a.v || a.c.name.localeCompare(b.c.name)).map(x => `<span>${esc(x.c.name)} <b>${signed(x.v)}</b> · ${x.k} tribe${x.k === 1 ? "" : "s"}</span>`).join("")}</div></div>` : "";
   // top scorers: their own points, and right under it what a tribe with them as Sole Survivor got that episode
-  const ssWith = x => { const y = ssPicks.find(z => z.c.name === x.n); return y ? `<small>${signed(x.p + y.v)} with SS</small>` : ""; };
+  const ssWith = x => { const y = ssPicks.find(z => z.c.name === x.n); return y ? ssBit(y.v) : ""; };
   // "keeps torch lit" is the default every-week line, so it goes last
   const torchLast = e => /torch lit/i.test(e.label) ? 1 : 0;
   const evs = outEv + mergeEv + ssEv + D.events.filter(e => e.ep === ep).sort((a, b) => torchLast(a) - torchLast(b)).map(e => `<div class="ev">
