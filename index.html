@@ -195,6 +195,7 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .jgrid small{font:600 10.5px Roboto,sans-serif;color:var(--ink-3);text-transform:uppercase;letter-spacing:.4px}
 .jgrid b{font-size:14px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .jgrid span{font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+.jgrid li.left{opacity:.6}
 .h2sub{font:600 12px Roboto,sans-serif;letter-spacing:.3px;color:var(--ink-3);margin-left:6px;text-transform:none}
 .pillars{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (min-width:640px){.pillars{grid-template-columns:repeat(4,1fr)}}
@@ -265,8 +266,9 @@ h2{font:800 15px "Roboto Condensed",Roboto,sans-serif;text-transform:uppercase;l
 .ss{font-style:normal;font-size:11px;color:color-mix(in srgb,var(--orange) 28%,var(--ink-3));margin-right:2px;vertical-align:1px}
 .rp.added span,.addn{box-shadow:inset 0 -1.5px 0 color-mix(in srgb,var(--lime) 35%,var(--ink-3))}
 .addn{text-decoration:none}
-.who span.tsnote{font-size:12px;color:var(--ink-3)}
-.ssx{font:500 10.5px Roboto,sans-serif;color:var(--ink-3);margin-left:4px;white-space:nowrap}
+.ssx{font:600 11px Roboto,sans-serif;color:var(--ink-2);margin-left:4px;white-space:nowrap}
+.ssx .ssn{font-weight:700;color:color-mix(in srgb,var(--orange) 28%,var(--ink-3))}
+.player .pts small.ssx{font:600 11.5px Roboto,sans-serif;color:var(--ink-2);margin:0}
 td.num .ssx{display:block;margin:0}
 .ln{font-size:.8em;font-weight:400;color:var(--ink-3);margin-left:1px}
 /* My Tribe player notes: same quiet treatment as Standings */
@@ -574,14 +576,16 @@ const cOf = n => D.byName[n.toLowerCase()] || { name: n, full:"", eps:{}, epx:{}
 // "Kristin" + a quieter "Flickinger": last word of the sheet's FULL NAME, when it adds something
 const lastName = c => { const w = String(c.full || "").replace(/[“”"]/g, "").trim().split(/\s+/); const l = w.length > 1 ? w[w.length - 1] : ""; return l && l.toLowerCase() !== c.name.toLowerCase() ? l : ""; };
 const onTxt = k => k ? `on ${k} tribe${k === 1 ? "" : "s"}` : "on no tribes";
-const isJuror = c => !!(c && c.made && c.out);
+// "Left jury" setting (comma-separated): jurors who walked away from the jury. They're crossed out on the Jury card,
+// don't count toward it or take a seat, and show as plain "out" everywhere else.
+const leftJury = c => !!(c && c.made && c.out) && String(D.settings["Left jury"] || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean).includes(c.name.toLowerCase());
+const isJuror = c => !!(c && c.made && c.out) && !leftJury(c);
 // seats follow the episode they left; two out in the same episode follow the sheet's optional "Jury order" setting
 // (jurors listed first to last, comma-separated), else A to Z. Every juror gets their own seat.
 const juryOrder = () => String(D.settings["Jury order"] || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
 const jurors = () => { const ord = juryOrder(), pos = c => { const i = ord.indexOf(c.name.toLowerCase()); return i < 0 ? Infinity : i; };
   return D.castaways.filter(isJuror).sort((a, b) => a.out - b.out || pos(a) - pos(b) || a.name.localeCompare(b.name)); };
 const jurySeat = c => isJuror(c) ? 1 + jurors().indexOf(c) : 0;
-const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th","st","nd","rd"][n % 10] || "th");
 // what a castaway has scored for one tribe (dropped players only count up to the merge, added ones only after).
 // Bonuses are included so a tribe's players add up to its total: the made-merge bonus stays with the tribe that
 // had the player through the merge episode (the draft five); later bonuses (FTC, winner, most categories) go to
@@ -594,7 +598,8 @@ const isSSNow = (t, n) => !!t.ss && t.ss === n && rosterAt(t, 99).includes(n);
 // what a player shows for a tribe: their points for that tribe, plus the tribe's Sole Survivor bonus if they're its pick
 const shownPts = (t, n) => ptsFor(t, n).pts + (isSSNow(t, n) ? t.ssPts : 0);
 // the small "+2 SS" piece, same look on every tab. own given: "8 + 2 SS" (number shown already includes it); no own: "+2 SS" (extra)
-const ssBit = (v, own) => `<small class="ssx">${own === undefined ? signed(v) : `${own} ${v < 0 ? "−" : "+"} ${Math.abs(v)}`} SS</small>`;
+// SSB = Sole Survivor bonus; the bonus number is in the star's color
+const ssBit = (v, own) => `<small class="ssx">${own === undefined ? `<b class="ssn">${signed(v)}</b>` : `${own} <b class="ssn">${v < 0 ? "−" : "+"} ${Math.abs(v)}</b>`} SSB</small>`;
 // a castaway's Sole Survivor bonus per tribe that has them as Sole Survivor right now (null if nobody does)
 const ssOf = n => { const ts = D.tribes.filter(t => isSSNow(t, n)); return ts.length ? { v: Math.max(...ts.map(t => t.ssPts)), k: ts.length } : null; };
 const mergeBonus = c => c.mb || 0;
@@ -604,7 +609,7 @@ function ptsFor(t, n){
   if (!merged) return { pts: c.pre + c.bonus, note: "this season" };
   if (swapped && !t.draft.includes(n)) return { pts: c.post + lateBonus(c), note: `from Ep ${D.merge}` };
   if (swapped && !t.after.includes(n)) return { pts: c.pre + mergeBonus(c), note: `through Ep ${D.merge - 1}` };
-  return { pts: c.pre + c.post + c.bonus, note: "for this tribe" };
+  return { pts: c.pre + c.post + c.bonus, note: "" };
 }
 // category race: one segment per point-scoring category, colored by its section on the Episode Log
 const PILLARS = [[/outwit/i, "Outwit", "#3d8fd1"], [/outplay/i, "Outplay", "#ff9900"], [/outlast/i, "Outlast", "#86b800"], [/trick/i, "Bag of Tricks", "#a46fd6"]];
@@ -643,7 +648,7 @@ function vStandings(){
     const order = [...roster.filter(n => !cOf(n).out), ...roster.filter(n => cOf(n).out)];
     const players = order.map(n => {
       const c = cOf(n), isAdded = merged && t.after.length && !t.draft.includes(n), hit = q && n.toLowerCase().includes(q);
-      return `<span class="rp ${c.out ? "out" : ""} ${isAdded ? "added" : ""} ${hit ? "hit" : ""}" title="${esc(c.full || n)}${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}${isJuror(c) ? ` · ${ordinal(jurySeat(c))} juror` : ""}` : ""}${isAdded ? " · added at merge" : ""}${t.ss === n ? " · Sole Survivor pick" : ""}">${t.ss === n ? '<i class="ss" aria-label="Sole Survivor pick">★</i>' : ""}<span>${esc(n)}</span> <b>${shownPts(t, n)}</b>${isSSNow(t, n) && t.ssPts ? ssBit(t.ssPts, ptsFor(t, n).pts) : ""}</span>`;
+      return `<span class="rp ${c.out ? "out" : ""} ${isAdded ? "added" : ""} ${hit ? "hit" : ""}" title="${esc(c.full || n)}${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}${isJuror(c) ? ` · juror` : ""}` : ""}${isAdded ? " · added at merge" : ""}${t.ss === n ? " · Sole Survivor pick" : ""}">${t.ss === n ? '<i class="ss" aria-label="Sole Survivor pick">★</i>' : ""}<span>${esc(n)}</span> <b>${shownPts(t, n)}</b></span>`;
     }).join("");
     return `<li class="st-item" data-leader="${esc(t.leader)}" style="--tc:${t.color};--tn-l:${nameInk(t.color, false)};--tn-d:${nameInk(t.color, true)}">
       <span class="swatch"></span>
@@ -672,26 +677,26 @@ function vTribe(){
   const added = swapped ? t.after.filter(n => !t.draft.includes(n)) : [];
 
   // category breakdowns moved to the Castaways tab (category race); rows here just show who, status and points
-  const outText = c => !c.out ? "" : isJuror(c) ? `🐋 ${ordinal(jurySeat(c))} juror · ${c.quit ? "quit" : "out"} Ep ${c.out}` : c.quit ? `🤡 Quit · Ep ${c.out}` : `🔥 Out · Ep ${c.out}`;
+  const outText = c => !c.out ? "" : leftJury(c) ? `🔥 Out · Ep ${c.out} · left the jury` : isJuror(c) ? `🐋 Juror · ${c.quit ? "quit" : "out"} Ep ${c.out}` : c.quit ? `🤡 Quit · Ep ${c.out}` : `🔥 Out · Ep ${c.out}`;
   const playerRow = (n, kind) => {
     const c = cOf(n);
     const ss = kind !== "dropped" && isSSNow(t, n);
     const { pts: own, note: baseNote } = kind === "dropped" ? { pts: ptsFor(t, n).pts, note: "for you" } : ptsFor(t, n);
     const pts = own + (ss ? t.ssPts : 0);
-    const note = ss && t.ssPts ? ssBit(t.ssPts, own).replace(/<\/?small[^>]*>/g, "") : baseNote;
+    const note = ss && t.ssPts ? ssBit(t.ssPts, own).replace(/^<small class="ssx">|<\/small>$/g, "") : baseNote;
     const tags = [
-      ss ? `<span><i class="ss">★</i>Sole Survivor · ${own} their pts ${t.ssPts < 0 ? "−" : "+"} ${Math.abs(t.ssPts)} SS bonus${c.out ? " · no more bonus" : ""}</span>` : "",
+      ss ? `<span><i class="ss">★</i>Sole Survivor${c.out ? " · no more bonus" : ""}</span>` : "",
       kind === "added" ? '<span><u class="addn">Added at merge</u></span>' : "",
       D.winner && D.winner === n ? '<span>🏆 Won the season</span>' : ""
     ].filter(Boolean).join(" ");
     const goneEarly = c.out && c.out < D.merge;
     const sub = kind === "dropped" && !goneEarly
-      ? `<span class="outtag">Dropped at merge${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}${isJuror(c) ? ` · ${ordinal(jurySeat(c))} juror` : ""}` : ""}</span>`
+      ? `<span class="outtag">Dropped at merge${c.out ? ` · ${c.quit ? "quit" : "out"} Ep ${c.out}${isJuror(c) ? ` · juror` : ""}` : ""}</span>`
       : c.out ? `<span class="outtag">${outText(c)}</span>` : "";
     return `<li class="player ${kind === "dropped" ? "dropped" : ""} ${c.out && kind !== "dropped" ? "out" : ""}">
       <div class="top">${avatar(n)}
         <div class="who"><b class="${c.out ? "out-name" : ""}">${kind === "added" ? `<u class="addn">${esc(n)}</u>` : esc(n)}${lastName(c) ? ` <small class="ln">${esc(lastName(c))}</small>` : ""}</b>${sub}</div>
-        <div class="pts">${pts}<small>${note}</small></div>
+        <div class="pts">${pts}${note ? `<small class="${ss && t.ssPts ? "ssx" : ""}">${note}</small>` : ""}</div>
       </div>
       ${tags ? `<div class="ptags">${tags}</div>` : ""}
       ${kind === "dropped" && !(c.out && c.out < D.merge) ? `<div class="since">${signed(c.post + lateBonus(c))} pts since you dropped them</div>` : ""}
@@ -813,29 +818,19 @@ function statsBlock(afterJury){
   const mu = cs.map(c => ({ c, v: moved(c.name, "after", "draft") })).filter(x => x.v > 0).map(x => ({ ...x, sub: pct(x.v) }));
   const mh = [...alive].filter(c => held(c.name) > 0).sort((a,b) => held(b.name) - held(a.name) || a.name.localeCompare(b.name)).map(c => ({ c, v: held(c.name), sub: `on ${Math.round(held(c.name) / N * 100)}% of tribes` }));
 
-  // rock steady: the dependable one. Points every week without the spikes. Only above-median scorers
-  // (a steady +1 for surviving isn't dependable), not the season's top 3 (everyone already knows them),
-  // and nobody already listed under Cooling off.
-  const weekly = c => scored.map(e => c.eps[e] || 0);   // gameplay only: a one-time bonus isn't "steady"
-  const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
-  const sd = a => { const m = mean(a); return Math.sqrt(mean(a.map(x => (x - m) ** 2))); };
-  const means = alive.map(c => mean(weekly(c))).sort((a,b) => a - b);
-  const midMean = means.length ? means[Math.floor((means.length - 1) / 2)] : 0;
-  const top3 = new Set([...cs].sort((a,b) => b.total - a.total).slice(0, 3).map(c => c.name));
-  // a "solid week" is at or above the typical weekly score of players still in (median of every player-week)
-  const allWeeks = alive.flatMap(weekly).sort((a,b) => a - b);
-  const solidAt = Math.max(1, allWeeks.length ? allWeeks[Math.floor((allWeeks.length - 1) / 2)] : 1);
-  const solid = c => weekly(c).filter(x => x >= solidAt).length;
-  const steady = scored.length >= 3 ? alive.filter(c => !top3.has(c.name) && !cold.includes(c) && mean(weekly(c)) >= midMean)
-    .sort((a,b) => solid(b) - solid(a) || sd(weekly(a)) - sd(weekly(b)) || mean(weekly(b)) - mean(weekly(a)) || a.name.localeCompare(b.name)).slice(0, 3) : [];
-  const avgTxt = c => (Math.round(mean(weekly(c)) * 10) / 10).toFixed(1);
+  // Sole Survivor bonus: what each player still in has earned every tribe that has them as Sole Survivor (the sheet's
+  // SS +1), only players who are somebody's pick. Top 3; if a tie runs past 3rd, stop above it (top 2, or just the leaders).
+  const ssAll = alive.map(c => ({ c, s: ssOf(c.name) })).filter(x => x.s && x.s.v > 0)
+    .sort((a, b) => b.s.v - a.s.v || b.s.k - a.s.k || a.c.name.localeCompare(b.c.name));
+  let ssTop = ssAll.slice(0, 3);
+  if (ssAll.length > 3 && ssAll[3].s.v === ssAll[2].s.v) { const cut = ssTop.filter(x => x.s.v > ssAll[2].s.v); ssTop = cut.length ? cut : ssTop; }
 
   return `${span ? `<h2${afterJury ? "" : ' style="margin-top:4px"'}>Right now <small class="h2sub">${span}</small></h2>
   <p class="muted" style="font-size:13px;margin:-2px 2px 8px">Points over the last ${win.length > 1 ? `${win.length} episodes` : "episode"}, players still in the game.</p>
   <div class="stats">
     ${card("📈 Heating up", "", hot.map(c => line(c, signed(recent(c)), tribes(c))))}
     ${cold.length ? card("🧊 Cooling off", "", cold.map(c => line(c, signed(recent(c)), tribes(c)))) : ""}
-    ${steady.length ? card("🪨 Rock steady", `${solidAt}+ most weeks`, steady.map(c => line(c, `${avgTxt(c)}<small>/ep</small>`, weekly(c).slice(-5).join(" · ")))) : ""}
+    ${ssTop.length ? card('<i class="ss">★</i> Sole Survivor bonus', "since the merge", ssTop.map(x => line(x.c, signed(x.s.v), `each for ${x.s.k} tribe${x.s.k === 1 ? "" : "s"}`))) : ""}
     ${sleeper ? card("🎯 Sleeper", "3 or fewer tribes", [line(sleeper, signed(recent(sleeper)), tribes(sleeper))]) : ""}
   </div>` : ""}
   <h2${span ? "" : ' style="margin-top:4px"'}>Season</h2>
@@ -893,7 +888,7 @@ function vCastaways(){
     const epsHtml = Object.entries(c.epx).filter(([e]) => +e <= Math.max(D.latest, 2)).map(([e, v]) =>
       `<div><small>Ep ${e}</small><b class="${v > 0 ? "pos" : v < 0 ? "negv" : ""}">${v}</b></div>`).join("");
     return `<tr class="main ${c.out ? "out" : ""}" data-c="${esc(c.name)}">
-        <td style="width:55%"><b class="${c.out ? "out-name" : ""}">${esc(c.name)}</b>${c.made ? ' <span class="pill tiny">Merge</span>' : ""}${c.out ? ` <span class="pill tiny snuffed">${isJuror(c) ? `${ordinal(jurySeat(c))} juror · ` : ""}${c.quit ? "Quit" : "Out"} Ep ${c.out}</span>` : ""}</td>
+        <td style="width:55%"><b class="${c.out ? "out-name" : ""}">${esc(c.name)}</b>${c.made ? ' <span class="pill tiny">Merge</span>' : ""}${c.out ? ` <span class="pill tiny snuffed">${isJuror(c) ? `Juror · ` : leftJury(c) ? "Left jury · " : ""}${c.quit ? "Quit" : "Out"} Ep ${c.out}</span>` : ""}</td>
         <td class="num"><b>${c.total}</b>${ssOf(c.name)?.v ? ssBit(ssOf(c.name).v) : ""}</td>
         <td class="num">${onTribes(c.name)}</td>
       </tr>
@@ -906,7 +901,8 @@ function vCastaways(){
   const th = (k, label, cls="") => `<th class="${cls}" data-sort="${k}">${label}${sortKey === k ? " ▾" : ""}</th>`;
   const jury = jurors();
   const juryHtml = jury.length ? `<div class="card pillar jcard"><h3>🐋 The Jury · ${jury.length}</h3><ol class="jgrid">${jury.map(c =>
-    `<li><small>${ordinal(jurySeat(c))}</small><b>${esc(c.name)}</b><span>${onTxt(onTribes(c.name)).replace(/^on /, "")}</span></li>`).join("")}</ol></div>` : "";
+    `<li><small>${jurySeat(c)}</small><b>${esc(c.name)}</b><span>${onTxt(onTribes(c.name)).replace(/^on /, "")}</span></li>`).join("")}${D.castaways.filter(leftJury).map(c =>
+    `<li class="left"><small>Left</small><b class="out-name">${esc(c.name)}</b><span>${onTxt(onTribes(c.name)).replace(/^on /, "")}</span></li>`).join("")}</ol></div>` : "";
   return `${juryHtml}${statsBlock(!!jury.length)}${raceBlock()}<h2>All castaways</h2><div class="card" style="overflow:hidden"><table class="ctable">
     <thead><tr>${th("name","Castaway")}${th("total","Points","num")}<th class="num">On tribes</th></tr></thead>
     <tbody>${rows}</tbody></table></div>
@@ -922,7 +918,8 @@ function vEpisodes(){
   const outLine = (list, icon, title) => list.length ? `<div class="ev"><div class="head"><span class="val">${icon}</span><b>${title}</b></div>
       <div class="names">${list.map(c => `<span class="out-name">${esc(c.name)}</span>`).join("")}</div></div>` : "";
   const gone = D.castaways.filter(c => c.out === ep);
-  const outEv = outLine(gone.filter(c => !c.quit && !isJuror(c)), "🔥", "Torch snuffed") + outLine(gone.filter(c => !c.quit && isJuror(c)).sort((a, b) => jurySeat(a) - jurySeat(b)), "🐋", `Torch snuffed · joins the jury`) + outLine(gone.filter(c => c.quit), "🤡", "Quit");
+  const joined = c => isJuror(c) || leftJury(c);
+  const outEv = outLine(gone.filter(c => !c.quit && !joined(c)), "🔥", "Torch snuffed") + outLine(gone.filter(c => !c.quit && joined(c)).sort((a, b) => (jurySeat(a) || 99) - (jurySeat(b) || 99)), "🐋", `Torch snuffed · joins the jury`) + outLine(gone.filter(c => c.quit), "🤡", "Quit");
   const merged = ep === D.mergeEp ? D.castaways.filter(c => c.mb) : [];
   const mergeEv = merged.length ? `<div class="ev"><div class="head"><span class="val pos">${signed(merged[0].mb)}</span><b>Made the merge <small class="note">(one-time bonus)</small></b></div>
       <div class="names">${merged.map(c => `<span>${esc(c.name)}</span>`).join("")}</div></div>` : "";
@@ -930,8 +927,11 @@ function vEpisodes(){
   const ssPicks = ep >= D.merge ? D.castaways.map(c => ({ c, v: ssValue() * (c.sig?.[ep] || 0), k: D.tribes.filter(t => t.ss === c.name && rosterAt(t, ep).includes(c.name)).length })).filter(x => x.v && x.k) : [];
   const ssEv = ssPicks.length ? `<div class="ev"><div class="head"><span class="val"><i class="ss">★</i></span><b>Sole Survivor bonus <small class="note">(extra, for tribes with them as Sole Survivor)</small></b></div>
       <div class="names">${ssPicks.sort((a, b) => b.v - a.v || a.c.name.localeCompare(b.c.name)).map(x => `<span>${esc(x.c.name)} <b>${signed(x.v)}</b> · ${x.k} tribe${x.k === 1 ? "" : "s"}</span>`).join("")}</div></div>` : "";
-  const ssNote = n => { const x = ssPicks.find(y => y.c.name === n); return x ? `<span class="tsnote"><i class="ss">★</i>${signed(x.v)} more for ${x.k} Sole Survivor tribe${x.k === 1 ? "" : "s"}</span>` : ""; };
-  const evs = outEv + mergeEv + ssEv + D.events.filter(e => e.ep === ep).map(e => `<div class="ev">
+  // top scorers: their own points, and right under it what a tribe with them as Sole Survivor got that episode
+  const ssWith = x => { const y = ssPicks.find(z => z.c.name === x.n); return y ? ssBit(y.v) : ""; };
+  // "keeps torch lit" is the default every-week line, so it goes last
+  const torchLast = e => /torch lit/i.test(e.label) ? 1 : 0;
+  const evs = outEv + mergeEv + ssEv + D.events.filter(e => e.ep === ep).sort((a, b) => torchLast(a) - torchLast(b)).map(e => `<div class="ev">
       <div class="head"><span class="val ${e.pts < 0 ? "negv" : "pos"}">${signed(e.pts)}</span><b>${esc(e.label)}${noteFor(e.label) ? ` <small class="note">${esc(noteFor(e.label))}</small>` : ""}</b></div>
       <div class="names">${tally(e.names).map(([n, k]) => `<span>${esc(n)}${k > 1 ? ` <b>×${k}</b>` : ""}</span>`).join("")}</div></div>`).join("");
   const top = [...D.castaways].map(c => ({ n: c.name, p: c.epx[ep] || 0 })).filter(x => x.p !== 0).sort((a,b) => b.p - a.p).slice(0, 5);
@@ -939,7 +939,7 @@ function vEpisodes(){
     <div class="grid2">
       <div><h2 style="margin-top:0">What happened</h2><div class="card">${evs}</div></div>
       <div><h2 style="margin-top:0">Top scorers</h2><div class="card"><ul class="players">${top.map(x =>
-        `<li class="player"><div class="top">${avatar(x.n)}<div class="who"><b>${esc(x.n)}</b>${ssNote(x.n)}</div><div class="pts ${x.p < 0 ? "negv" : ""}">${signed(x.p)}</div></div></li>`).join("")}</ul></div></div>
+        `<li class="player"><div class="top">${avatar(x.n)}<div class="who"><b>${esc(x.n)}</b></div><div class="pts ${x.p < 0 ? "negv" : ""}">${signed(x.p)}${ssWith(x)}</div></div></li>`).join("")}</ul></div></div>
     </div>`;
 }
 
