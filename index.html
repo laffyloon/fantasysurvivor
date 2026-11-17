@@ -830,7 +830,7 @@ function statsBlock(afterJury){
   <div class="stats">
     ${card("📈 Heating up", "", hot.map(c => line(c, signed(recent(c)), tribes(c))))}
     ${cold.length ? card("🧊 Cooling off", "", cold.map(c => line(c, signed(recent(c)), tribes(c)))) : ""}
-    ${ssTop.length ? card('<i class="ss">★</i> Sole Survivor bonus', "since the merge", ssTop.map(x => line(x.c, signed(x.s.v), `each for ${x.s.k} tribe${x.s.k === 1 ? "" : "s"}`))) : ""}
+    ${ssTop.length ? card('<i class="ss">★</i> Sole Survivor bonus', "since the merge", ssTop.map(x => line(x.c, signed(x.s.v), `${x.s.k} tribe${x.s.k === 1 ? "" : "s"}`))) : ""}
     ${sleeper ? card("🎯 Sleeper", "3 or fewer tribes", [line(sleeper, signed(recent(sleeper)), tribes(sleeper))]) : ""}
   </div>` : ""}
   <h2${span ? "" : ' style="margin-top:4px"'}>Season</h2>
